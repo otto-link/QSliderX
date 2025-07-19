@@ -4,6 +4,7 @@
 #pragma once
 #include <climits> // INT_MAX
 
+#include <QLineEdit>
 #include <QWidget>
 
 namespace qsx
@@ -23,8 +24,9 @@ public:
             bool               add_plus_minus_buttons_ = true,
             QWidget           *parent = nullptr);
 
+  void  apply_text_edit_value();
   int   get_value() const;
-  void  set_value(int new_value);
+  bool  set_value(int new_value);
   QSize sizeHint() const;
 
 Q_SIGNALS:
@@ -38,6 +40,7 @@ protected:
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
+  void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
   void update_geometry();
@@ -61,6 +64,8 @@ private:
   QRect       rect_minus;
   QRect       rect_plus;
   QRect       rect_bar;
+
+  QLineEdit *value_edit = nullptr;
 };
 
 } // namespace qsx

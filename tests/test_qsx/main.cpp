@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   QSXLOG->info("Starting test application...");
 
   QWidget window;
-  // window.setMinimumSize(300, 200);
+  window.setStyleSheet("background-color: black;");
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
   {
@@ -39,6 +39,15 @@ int main(int argc, char *argv[])
   }
 
   {
+    auto *s = new qsx::SliderInt("Int", 5, 0, INT_MAX);
+    layout->addWidget(s);
+
+    s->connect(s,
+               &qsx::SliderInt::value_has_changed,
+               [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+  }
+
+  {
     auto *s = new qsx::SliderInt("Int", 5, 0, 10, false);
     layout->addWidget(s);
 
@@ -50,6 +59,14 @@ int main(int argc, char *argv[])
   {
     auto *s = new qsx::SliderInt("A very long label, actually too long");
     layout->addWidget(s);
+
+    s->connect(s,
+               &qsx::SliderInt::value_changed,
+               [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+
+    s->connect(s,
+               &qsx::SliderInt::value_has_changed,
+               [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
   }
 
   window.show();

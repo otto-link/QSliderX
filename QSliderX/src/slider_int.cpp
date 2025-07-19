@@ -3,6 +3,7 @@
  * this software. */
 #include <QGraphicsSceneHoverEvent>
 #include <QHoverEvent>
+#include <QIntValidator>
 #include <QPainter>
 
 #include "qsx/config.hpp"
@@ -31,6 +32,33 @@ SliderInt::SliderInt(const std::string &label_,
   this->setAttribute(Qt::WA_Hover);
 
   this->update_geometry();
+
+  // text edit
+  this->value_edit = new QLineEdit(this);
+  this->value_edit->setVisible(false);
+  this->value_edit->setFixedHeight(this->height() - 2);
+  this->value_edit->setAlignment(Qt::AlignCenter);
+  this->connect(value_edit,
+                &QLineEdit::editingFinished,
+                this,
+                &SliderInt::apply_text_edit_value);
+
+  std::string style_sheet = "background-color: " +
+                            QSX_CONFIG->global.color_bg.name().toStdString() +
+                            "; color: " +
+                            QSX_CONFIG->global.color_text.name().toStdString() +
+                            "; border: 0px;";
+  this->value_edit->setStyleSheet(style_sheet.c_str());
+}
+
+void SliderInt::apply_text_edit_value()
+{
+  int new_value = this->value_edit->text().toInt();
+  if (this->set_value(new_value))
+    Q_EMIT this->value_has_changed();
+
+  this->value_edit->setVisible(false);
+  this->update();
 }
 
 bool SliderInt::event(QEvent *event)
@@ -76,10 +104,25 @@ bool SliderInt::event(QEvent *event)
   default:
     break;
   }
-  return QWidget::event(event); // Call base class implementation
+  return QWidget::event(event);
 }
 
 int SliderInt::get_value() const { return this->value; }
+
+void SliderInt::mouseDoubleClickEvent(QMouseEvent *event)
+{
+  if (this->is_bar_hovered)
+  {
+    this->value_edit->setText(QString::number(this->value));
+    this->value_edit->setGeometry(this->rect_bar.adjusted(1, 1, -1, -1));
+    this->value_edit->setVisible(true);
+    this->value_edit->setFocus();
+    this->value_edit->selectAll();
+    this->update();
+  }
+
+  QWidget::mouseDoubleClickEvent(event);
+}
 
 void SliderInt::mouseMoveEvent(QMouseEvent *event)
 {
@@ -93,8 +136,7 @@ void SliderInt::mouseMoveEvent(QMouseEvent *event)
 
     int dx = event->position().toPoint().x() - this->pos_x_before_dragging;
     int dv = static_cast<int>(static_cast<float>(dx) / ppu);
-    int new_value = std::clamp(this->value_before_dragging + dv, this->vmin, this->vmax);
-    this->set_value(new_value);
+    this->set_value(this->value_before_dragging + dv);
   }
 
   QWidget::mouseMoveEvent(event);
@@ -102,11 +144,24 @@ void SliderInt::mouseMoveEvent(QMouseEvent *event)
 
 void SliderInt::mousePressEvent(QMouseEvent *event)
 {
-  if (event->button() == Qt::LeftButton && this->is_bar_hovered)
+  if (event->button() == Qt::LeftButton)
   {
-    this->value_before_dragging = this->value;
-    this->pos_x_before_dragging = event->position().toPoint().x();
-    this->is_dragging = true;
+    if (this->is_bar_hovered)
+    {
+      this->value_before_dragging = this->value;
+      this->pos_x_before_dragging = event->position().toPoint().x();
+      this->is_dragging = true;
+    }
+    else if (this->is_minus_hovered)
+    {
+      if (this->set_value(this->get_value() - 1))
+        Q_EMIT this->value_has_changed();
+    }
+    else if (this->is_plus_hovered)
+    {
+      if (this->set_value(this->get_value() + 1))
+        Q_EMIT this->value_has_changed();
+    }
   }
 
   QWidget::mousePressEvent(event);
@@ -114,9 +169,12 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
 
 void SliderInt::mouseReleaseEvent(QMouseEvent *event)
 {
-  this->is_dragging = false;
-  if (this->value != this->value_before_dragging)
-    Q_EMIT this->value_has_changed();
+  if (this->is_dragging)
+  {
+    this->is_dragging = false;
+    if (this->value != this->value_before_dragging)
+      Q_EMIT this->value_has_changed();
+  }
 
   QWidget::mouseReleaseEvent(event);
 }
@@ -138,7 +196,7 @@ void SliderInt::paintEvent(QPaintEvent *)
                           QSX_CONFIG->global.radius);
 
   // value bar
-  if (this->vmin != -INT_MAX && this->vmax != INT_MAX)
+  if (this->vmin != -INT_MAX && this->vmax != INT_MAX && !this->value_edit->isVisible())
   {
     painter.setBrush(QBrush(QSX_CONFIG->global.color_selected));
     painter.setPen(Qt::NoPen);
@@ -184,14 +242,22 @@ void SliderInt::resizeEvent(QResizeEvent *event)
   QWidget::resizeEvent(event);
 }
 
-void SliderInt::set_value(int new_value)
+bool SliderInt::set_value(int new_value)
 {
-  if (new_value != this->value)
+  new_value = std::clamp(new_value, this->vmin, this->vmax);
+
+  if (new_value == this->value)
+  {
+    return false;
+  }
+  else
   {
     this->value = new_value;
     this->update();
     Q_EMIT this->value_changed();
   }
+
+  return true;
 }
 
 QSize SliderInt::sizeHint() const { return QSize(this->slider_width_min, this->base_dy); }
