@@ -3,7 +3,7 @@
  * this software. */
 #pragma once
 #include <climits> // INT_MAX
-#include <queue>
+#include <deque>
 
 #include <QLineEdit>
 #include <QWidget>
@@ -45,6 +45,7 @@ protected:
   void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
+  void randomize_value();
   void update_history();
   void update_geometry();
 
@@ -68,7 +69,7 @@ private:
   QRect           rect_minus;
   QRect           rect_plus;
   QRect           rect_bar;
-  std::queue<int> history;
+  std::deque<int> history;
   std::string     style_sheet;
 
   QLineEdit *value_edit = nullptr;

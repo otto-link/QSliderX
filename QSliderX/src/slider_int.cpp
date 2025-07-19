@@ -1,6 +1,8 @@
 /* Copyright (c) 2025 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <random>
+
 #include <QGraphicsSceneHoverEvent>
 #include <QHoverEvent>
 #include <QIntValidator>
@@ -175,8 +177,7 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
   }
   else if (event->button() == Qt::RightButton)
   {
-    // TODO fix or remove
-    // this->show_context_menu();
+    this->show_context_menu();
   }
 
   QWidget::mousePressEvent(event);
@@ -251,6 +252,16 @@ void SliderInt::paintEvent(QPaintEvent *)
   painter.drawText(this->rect_plus, Qt::AlignCenter | Qt::AlignVCenter, right);
 }
 
+void SliderInt::randomize_value()
+{
+  std::random_device              rd;
+  std::mt19937                    gen(rd());
+  std::uniform_int_distribution<> dist(vmin, vmax);
+
+  if (this->set_value(dist(gen)))
+    Q_EMIT this->value_has_changed();
+}
+
 void SliderInt::resizeEvent(QResizeEvent *event)
 {
   this->update_geometry();
@@ -277,17 +288,64 @@ bool SliderInt::set_value(int new_value)
 
 void SliderInt::show_context_menu()
 {
-  QSXLOG->debug("SliderInt::show_context_menu");
-
   QMenu menu(this);
   menu.setStyleSheet(this->style_sheet.c_str());
 
-  // Add predefined actions
-  QAction *randomizeAction = menu.addAction("Randomize");
-  QAction *resetAction = menu.addAction("Reset");
-  menu.addSeparator();
+  // add predefined actions
+  QAction *randomize_action = menu.addAction("Randomize");
+  QAction *reset_action = menu.addAction("Reset");
+  menu.addSeparator()->setText("History");
+
+  // Add history actions
+  for (int i = static_cast<int>(this->history.size()) - 1; i >= 0; --i)
+  {
+    int      v = history[static_cast<size_t>(i)];
+    QString  hist_label = QString("Set to %1").arg(v);
+    QAction *history_action = menu.addAction(hist_label);
+    history_action->setData(v); // store value
+  }
 
   QAction *selected = menu.exec(QCursor::pos());
+
+  if (selected)
+  {
+    if (selected == randomize_action)
+    {
+      this->randomize_value();
+    }
+    else if (selected == reset_action)
+    {
+      if (this->set_value(this->value_init))
+        Q_EMIT this->value_has_changed();
+    }
+    else
+    {
+      QVariant v = selected->data();
+      if (v.isValid())
+      {
+        if (this->set_value(v.toInt()))
+          Q_EMIT this->value_has_changed();
+      }
+    }
+  }
+
+  // manually update hover state
+  QPoint local_pos = this->mapFromGlobal(QCursor::pos());
+  bool   inside = this->rect().contains(local_pos);
+
+  if (inside && !this->is_hovered)
+  {
+    this->is_hovered = true;
+    this->update();
+  }
+  else if (!inside && this->is_hovered)
+  {
+    this->is_hovered = false;
+    this->is_plus_hovered = false;
+    this->is_minus_hovered = false;
+    this->is_bar_hovered = false;
+    this->update();
+  }
 }
 
 QSize SliderInt::sizeHint() const { return QSize(this->slider_width, this->base_dy); }
@@ -337,8 +395,8 @@ void SliderInt::update_geometry()
 void SliderInt::update_history()
 {
   if (this->history.size() >= QSX_CONFIG->global.max_history)
-    this->history.pop();
-  this->history.push(this->value);
+    this->history.pop_front();
+  this->history.push_back(this->value);
 }
 
 } // namespace qsx

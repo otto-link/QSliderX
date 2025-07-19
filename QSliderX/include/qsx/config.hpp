@@ -29,7 +29,7 @@ public:
     float radius = 4.f;
 
     int    max_label_len = 16;
-    size_t max_history = 32;
+    size_t max_history = 8;
   } global;
 
   struct Slider
