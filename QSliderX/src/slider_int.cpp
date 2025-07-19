@@ -4,6 +4,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QHoverEvent>
 #include <QIntValidator>
+#include <QMenu>
 #include <QPainter>
 
 #include "qsx/config.hpp"
@@ -30,8 +31,23 @@ SliderInt::SliderInt(const std::string &label_,
 
   this->setMouseTracking(true);
   this->setAttribute(Qt::WA_Hover);
+  this->setContextMenuPolicy(Qt::CustomContextMenu);
 
   this->update_geometry();
+
+  this->connect(this,
+                &SliderInt::value_has_changed,
+                [this]()
+                {
+                  this->update_history();
+                  this->update_geometry();
+                });
+
+  // style (for standard widgets
+  this->style_sheet = "background-color: " +
+                      QSX_CONFIG->global.color_bg.name().toStdString() +
+                      "; color: " + QSX_CONFIG->global.color_text.name().toStdString() +
+                      "; border: 0px;" + "selection-background-color: #ABABAB;";
 
   // text edit
   this->value_edit = new QLineEdit(this);
@@ -42,13 +58,7 @@ SliderInt::SliderInt(const std::string &label_,
                 &QLineEdit::editingFinished,
                 this,
                 &SliderInt::apply_text_edit_value);
-
-  std::string style_sheet = "background-color: " +
-                            QSX_CONFIG->global.color_bg.name().toStdString() +
-                            "; color: " +
-                            QSX_CONFIG->global.color_text.name().toStdString() +
-                            "; border: 0px;";
-  this->value_edit->setStyleSheet(style_sheet.c_str());
+  this->value_edit->setStyleSheet(this->style_sheet.c_str());
 }
 
 void SliderInt::apply_text_edit_value()
@@ -163,6 +173,11 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
         Q_EMIT this->value_has_changed();
     }
   }
+  else if (event->button() == Qt::RightButton)
+  {
+    // TODO fix or remove
+    // this->show_context_menu();
+  }
 
   QWidget::mousePressEvent(event);
 }
@@ -260,7 +275,22 @@ bool SliderInt::set_value(int new_value)
   return true;
 }
 
-QSize SliderInt::sizeHint() const { return QSize(this->slider_width_min, this->base_dy); }
+void SliderInt::show_context_menu()
+{
+  QSXLOG->debug("SliderInt::show_context_menu");
+
+  QMenu menu(this);
+  menu.setStyleSheet(this->style_sheet.c_str());
+
+  // Add predefined actions
+  QAction *randomizeAction = menu.addAction("Randomize");
+  QAction *resetAction = menu.addAction("Reset");
+  menu.addSeparator();
+
+  QAction *selected = menu.exec(QCursor::pos());
+}
+
+QSize SliderInt::sizeHint() const { return QSize(this->slider_width, this->base_dy); }
 
 void SliderInt::update_geometry()
 {
@@ -268,9 +298,15 @@ void SliderInt::update_geometry()
   this->base_dx = fm.horizontalAdvance(QString("M"));
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
 
-  // TODO slider width
-  int label_width = QSX_CONFIG->global.max_label_len * this->base_dx;
-  this->slider_width_min = label_width + 64;
+  // int label_width = QSX_CONFIG->global.max_label_len * this->base_dx;
+  int label_width = fm.horizontalAdvance(this->label.c_str());
+  this->slider_width = label_width + QSX_CONFIG->slider.padding_middle +
+                       10 * fm.horizontalAdvance(QString("0")) + 6 * this->base_dx;
+
+  this->slider_width_min = label_width + QSX_CONFIG->slider.padding_middle +
+                           fm.horizontalAdvance(
+                               std::to_string(this->get_value()).c_str()) +
+                           6 * this->base_dx;
 
   // rectangles
   if (this->add_plus_minus_buttons)
@@ -293,9 +329,16 @@ void SliderInt::update_geometry()
   this->rect_bar = this->rect().adjusted(gap, 0, -gap, 0);
 
   // size
-  this->setMinimumWidth(this->sizeHint().width());
+  this->setMinimumWidth(this->slider_width_min);
   this->setMinimumHeight(this->sizeHint().height());
   this->setMaximumHeight(this->sizeHint().height());
+}
+
+void SliderInt::update_history()
+{
+  if (this->history.size() >= QSX_CONFIG->global.max_history)
+    this->history.pop();
+  this->history.push(this->value);
 }
 
 } // namespace qsx

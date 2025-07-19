@@ -21,11 +21,6 @@ int main(int argc, char *argv[])
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
   {
-    auto *label = new QLabel("Sliders Int");
-    layout->addWidget(label);
-  }
-
-  {
     auto *s = new qsx::SliderInt("Int", 3, 0, 10);
     layout->addWidget(s);
 
@@ -39,7 +34,7 @@ int main(int argc, char *argv[])
   }
 
   {
-    auto *s = new qsx::SliderInt("Int", 5, 0, INT_MAX);
+    auto *s = new qsx::SliderInt("Int", INT_MAX, 0, INT_MAX);
     layout->addWidget(s);
 
     s->connect(s,
@@ -57,16 +52,16 @@ int main(int argc, char *argv[])
   }
 
   {
-    auto *s = new qsx::SliderInt("A very long label, actually too long");
-    layout->addWidget(s);
+    // auto *s = new qsx::SliderInt("A very long label, actually too long", INT_MAX);
+    // layout->addWidget(s);
 
-    s->connect(s,
-               &qsx::SliderInt::value_changed,
-               [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+    // s->connect(s,
+    //            &qsx::SliderInt::value_changed,
+    //            [s]() { QSXLOG->trace("value: {}", s->get_value()); });
 
-    s->connect(s,
-               &qsx::SliderInt::value_has_changed,
-               [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+    // s->connect(s,
+    //            &qsx::SliderInt::value_has_changed,
+    //            [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
   }
 
   window.show();

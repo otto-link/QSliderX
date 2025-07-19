@@ -28,13 +28,15 @@ public:
     float width_hovered = 2.f;
     float radius = 4.f;
 
-    int max_label_len = 16;
+    int    max_label_len = 16;
+    size_t max_history = 32;
   } global;
 
   struct Slider
   {
     int   padding_v = 8;
     int   padding_h = 4;
+    int   padding_middle = 8;
     float ppu = 32.f; // sensitivity, pixels/unit
     float ppu_multiplier_fine_tuning = 10.f;
   } slider;
