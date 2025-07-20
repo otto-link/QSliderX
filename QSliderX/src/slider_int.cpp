@@ -143,10 +143,18 @@ void SliderInt::mouseMoveEvent(QMouseEvent *event)
   if (this->is_dragging)
   {
     // pixels per unit
-    float ppu = QSX_CONFIG->slider.ppu;
+    float ppu;
+
+    if (this->vmin == -INT_MAX || this->vmax == INT_MAX || this->vmin == this->vmax)
+      ppu = QSX_CONFIG->slider.ppu;
+    else
+      ppu = static_cast<float>(this->rect_bar.width()) /
+            static_cast<float>(this->vmax - this->vmin);
 
     if (event->modifiers() & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
+    else if (event->modifiers() & Qt::ShiftModifier)
+      ppu /= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
 
     int dx = event->position().toPoint().x() - this->pos_x_before_dragging;
     int dv = static_cast<int>(static_cast<float>(dx) / ppu);
@@ -392,7 +400,6 @@ void SliderInt::update_geometry()
   this->base_dx = fm.horizontalAdvance(QString("M"));
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
 
-  // int label_width = QSX_CONFIG->global.max_label_len * this->base_dx;
   int label_width = fm.horizontalAdvance(this->label.c_str());
   this->slider_width = label_width + QSX_CONFIG->slider.padding_middle +
                        10 * fm.horizontalAdvance(QString("0")) + 6 * this->base_dx;
@@ -400,6 +407,11 @@ void SliderInt::update_geometry()
   this->slider_width_min = label_width + QSX_CONFIG->slider.padding_middle +
                            fm.horizontalAdvance(this->get_value_as_string().c_str()) +
                            6 * this->base_dx;
+
+  // size
+  this->setMinimumWidth(this->slider_width_min);
+  this->setMinimumHeight(this->sizeHint().height());
+  this->setMaximumHeight(this->sizeHint().height());
 
   // rectangles
   if (this->add_plus_minus_buttons)
@@ -420,11 +432,6 @@ void SliderInt::update_geometry()
 
   int gap = this->add_plus_minus_buttons ? 2 * this->base_dx : 0;
   this->rect_bar = this->rect().adjusted(gap, 0, -gap, 0);
-
-  // size
-  this->setMinimumWidth(this->slider_width_min);
-  this->setMinimumHeight(this->sizeHint().height());
-  this->setMaximumHeight(this->sizeHint().height());
 }
 
 void SliderInt::update_history()

@@ -22,11 +22,12 @@ public:
     QColor color_border = QColor("#DFE1E2");
     QColor color_hovered = QColor("#FFFFFF");
     QColor color_selected = QColor("#4772B3");
+    QColor color_faded = QColor("#5B5B5B");
     QColor color_bg = QColor("#2B2B2B");
 
     float width_border = 1.f;
-    float width_hovered = 1.f;
-    float radius = 4.f;
+    float width_hovered = 2.f;
+    int   radius = 4;
 
     int    max_label_len = 16;
     size_t max_history = 8;
@@ -37,9 +38,14 @@ public:
     int   padding_v = 8;
     int   padding_h = 4;
     int   padding_middle = 8;
-    float ppu = 32.f; // sensitivity, pixels/unit
+    float ppu = 1.f; // sensitivity, pixels/unit
     float ppu_multiplier_fine_tuning = 10.f;
   } slider;
+
+  struct Range
+  {
+    int handle_radius = 5;
+  } range;
 
 private:
   Config(const Config &) = delete;

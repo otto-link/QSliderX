@@ -34,7 +34,7 @@ public:
   void        show_context_menu();
   QSize       sizeHint() const;
 
-Q_SIGNALS:
+signals:
   void value_changed();     // always
   void value_has_changed(); // only end of edit
 
@@ -52,13 +52,22 @@ private:
   void update_history();
   void update_geometry();
 
-  std::string     label;
-  int             value_init;
-  int             value;
-  int             vmin;
-  int             vmax;
-  bool            add_plus_minus_buttons;
-  std::string     value_format;
+  std::string label;
+  int         value_init;
+  int         value;
+  int         vmin;
+  int         vmax;
+  bool        add_plus_minus_buttons;
+  std::string value_format;
+  //
+  int   base_dx;
+  int   base_dy;
+  int   slider_width;
+  int   slider_width_min;
+  QRect rect_minus;
+  QRect rect_plus;
+  QRect rect_bar;
+  //
   bool            is_hovered = false;
   bool            is_minus_hovered = false;
   bool            is_plus_hovered = false;
@@ -66,13 +75,6 @@ private:
   bool            is_dragging = false;
   int             value_before_dragging;
   int             pos_x_before_dragging;
-  int             base_dx;
-  int             base_dy;
-  int             slider_width;
-  int             slider_width_min;
-  QRect           rect_minus;
-  QRect           rect_plus;
-  QRect           rect_bar;
   std::deque<int> history;
   std::string     style_sheet;
 
