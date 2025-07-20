@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "qsx/logger.hpp"
+#include "qsx/internal/logger.hpp"
 #include "qsx/slider_int.hpp"
 #include "qsx/slider_range.hpp"
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   }
 
   {
-    auto *s = new qsx::SliderInt("NoLim", 5, -INT_MAX, INT_MAX, false);
+    auto *s = new qsx::SliderInt("NoLim", 5, -INT_MAX, INT_MAX, false, "{} it.");
     layout->addWidget(s);
 
     s->connect(s,

@@ -29,6 +29,8 @@ public:
 
   float       get_value(int id) const;
   std::string get_value_as_string(int id) const;
+  float       get_vmax() const;
+  float       get_vmin() const;
   void        set_histogram_fct(std::function<std::vector<float>()> new_histogram_fct);
   void        set_is_dragging(bool new_state);
   bool        set_value(int id, float new_value);
@@ -71,6 +73,7 @@ private:
   int   slider_width_min;
   int   slider_height;
   QRect rect_bar;
+  QRect rect_label;
   QRect rect_handle_min;
   QRect rect_handle_max;
   QRect rect_range;

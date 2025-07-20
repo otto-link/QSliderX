@@ -8,9 +8,9 @@
 #include <QPainter>
 
 #include "qsx/config.hpp"
-#include "qsx/logger.hpp"
+#include "qsx/internal/logger.hpp"
+#include "qsx/internal/utils.hpp"
 #include "qsx/slider_range.hpp"
-#include "qsx/utils.hpp"
 
 namespace qsx
 {
@@ -90,6 +90,10 @@ std::string SliderRange::get_value_as_string(int id) const
   const float v = this->get_value(id);
   return std::vformat(this->value_format, std::make_format_args(v));
 }
+
+float SliderRange::get_vmax() const { return this->vmax; }
+
+float SliderRange::get_vmin() const { return this->vmin; }
 
 void SliderRange::mouseMoveEvent(QMouseEvent *event)
 {
@@ -175,13 +179,13 @@ void SliderRange::paintEvent(QPaintEvent *)
 
     for (size_t k = 0; k < bins.size(); ++k)
     {
-      float v = bins[k] / bmax;
+      float v = 0.9f * bins[k] / bmax;
       int   pv0 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
                                  static_cast<float>(k) / static_cast<float>(bins.size()));
       int   pv1 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
                                  static_cast<float>(k + 1) /
                                  static_cast<float>(bins.size()));
-      int   dy = static_cast<int>(static_cast<float>(this->base_dy) * (1.f - v));
+      int dy = static_cast<int>(static_cast<float>(this->rect_bar.height()) * (1.f - v));
 
       painter.setPen(Qt::NoPen);
       if (pv0 >= p0 && pv1 <= p1)
@@ -196,7 +200,8 @@ void SliderRange::paintEvent(QPaintEvent *)
       else if (k == bins.size() - 1)
         pv1 -= QSX_CONFIG->global.radius;
 
-      painter.drawRect(QRect(QPoint(pv0, dy + 1), QPoint(pv1, this->base_dy - 1)));
+      painter.drawRect(
+          QRect(QPoint(pv0, dy + 1), QPoint(pv1, this->rect_bar.height() - 1)));
     }
   }
   else
@@ -225,8 +230,9 @@ void SliderRange::paintEvent(QPaintEvent *)
   painter.setBrush(QBrush(QSX_CONFIG->global.color_text));
   painter.setPen(QPen(QSX_CONFIG->global.color_text));
 
-  QRect rect_label = this->rect_bar.adjusted(this->base_dx, 0, 0, 0);
-  painter.drawText(rect_label, Qt::AlignLeft | Qt::AlignVCenter, this->label.c_str());
+  painter.drawText(this->rect_label,
+                   Qt::AlignLeft | Qt::AlignVCenter,
+                   this->label.c_str());
 
   // painter.drawText(rect_label, Qt::AlignRight | Qt::AlignVCenter, "|+-R");
 
@@ -307,7 +313,7 @@ void SliderRange::update_geometry()
   // TODO fix
   this->slider_width = 256;
   this->slider_width_min = 256;
-  this->slider_height = 2 * this->base_dy;
+  this->slider_height = 3 * this->base_dy;
 
   // size
   this->setMinimumWidth(this->slider_width_min);
@@ -316,6 +322,8 @@ void SliderRange::update_geometry()
 
   // rectangles
   this->rect_bar = this->rect().adjusted(0, 0, 0, -this->base_dy);
+  this->rect_label = QRect(QPoint(this->base_dx, 0),
+                           QSize(this->rect_bar.width() - this->base_dx, this->base_dy));
 
   this->update_value_positions();
 }

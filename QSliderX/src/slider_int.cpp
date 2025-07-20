@@ -12,9 +12,9 @@
 #include <QPainterPath>
 
 #include "qsx/config.hpp"
-#include "qsx/logger.hpp"
+#include "qsx/internal/logger.hpp"
+#include "qsx/internal/utils.hpp"
 #include "qsx/slider_int.hpp"
-#include "qsx/utils.hpp"
 
 namespace qsx
 {
