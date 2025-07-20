@@ -29,6 +29,7 @@ public:
   void        apply_text_edit_value();
   int         get_value() const;
   std::string get_value_as_string() const;
+  void        set_is_dragging(bool new_state);
   bool        set_value(int new_value);
   void        show_context_menu();
   QSize       sizeHint() const;

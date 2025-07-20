@@ -94,7 +94,6 @@ bool SliderInt::event(QEvent *event)
     this->is_minus_hovered = false;
     this->is_plus_hovered = false;
     this->is_bar_hovered = false;
-    this->setCursor(Qt::ArrowCursor);
     this->update();
   }
   break;
@@ -107,12 +106,6 @@ bool SliderInt::event(QEvent *event)
     this->is_minus_hovered = this->rect_minus.contains(pos);
     this->is_plus_hovered = this->rect_plus.contains(pos);
     this->is_bar_hovered = this->rect_bar.contains(pos);
-
-    if (this->is_bar_hovered)
-      this->setCursor(Qt::SizeHorCursor);
-    else
-      this->setCursor(Qt::ArrowCursor);
-
     this->update();
   }
   break;
@@ -171,7 +164,7 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
     {
       this->value_before_dragging = this->value;
       this->pos_x_before_dragging = event->position().toPoint().x();
-      this->is_dragging = true;
+      this->set_is_dragging(true);
     }
     else if (this->is_minus_hovered)
     {
@@ -196,7 +189,8 @@ void SliderInt::mouseReleaseEvent(QMouseEvent *event)
 {
   if (this->is_dragging)
   {
-    this->is_dragging = false;
+    this->set_is_dragging(false);
+
     if (this->value != this->value_before_dragging)
       Q_EMIT this->value_has_changed();
   }
@@ -298,6 +292,16 @@ void SliderInt::resizeEvent(QResizeEvent *event)
 {
   this->update_geometry();
   QWidget::resizeEvent(event);
+}
+
+void SliderInt::set_is_dragging(bool new_state)
+{
+  this->is_dragging = new_state;
+
+  if (this->is_dragging)
+    this->setCursor(Qt::SizeHorCursor);
+  else
+    this->setCursor(Qt::ArrowCursor);
 }
 
 bool SliderInt::set_value(int new_value)
