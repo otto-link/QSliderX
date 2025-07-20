@@ -8,6 +8,7 @@
 #include <QIntValidator>
 #include <QMenu>
 #include <QPainter>
+#include <QPainterPath>
 
 #include "qsx/config.hpp"
 #include "qsx/logger.hpp"
@@ -214,23 +215,46 @@ void SliderInt::paintEvent(QPaintEvent *)
   // value bar
   if (this->vmin != -INT_MAX && this->vmax != INT_MAX && !this->value_edit->isVisible())
   {
-    painter.setBrush(QBrush(QSX_CONFIG->global.color_selected));
-    painter.setPen(Qt::NoPen);
-
-    float r = static_cast<float>(this->value - this->vmin) /
-              static_cast<float>(this->vmax - this->vmin);
-    int rcut = static_cast<int>((1.f - r) * static_cast<float>(this->rect_bar.width()));
-
-    if (this->add_plus_minus_buttons)
+    const int range = this->vmax - this->vmin;
+    if (range > 0)
     {
-      painter.drawRect(this->rect_bar.adjusted(1, 1, -rcut - 1, -1));
+      const float r = static_cast<float>(this->value - this->vmin) /
+                      static_cast<float>(range);
+      if (r > 0.f)
+      {
+        const int rcut = static_cast<int>((1.f - r) *
+                                          static_cast<float>(this->rect_bar.width()));
+
+        painter.setBrush(QSX_CONFIG->global.color_selected);
+        painter.setPen(Qt::NoPen);
+
+        if (this->add_plus_minus_buttons)
+        {
+          painter.drawRect(this->rect_bar.adjusted(1, 1, -rcut - 1, -1));
+        }
+        else
+        {
+          painter.drawRoundedRect(this->rect_bar.adjusted(1, 1, -rcut - 1, -1),
+                                  QSX_CONFIG->global.radius,
+                                  QSX_CONFIG->global.radius);
+        }
+      }
     }
-    else
-    {
-      painter.drawRoundedRect(this->rect_bar.adjusted(1, 1, -rcut - 1, -1),
-                              QSX_CONFIG->global.radius,
-                              QSX_CONFIG->global.radius);
-    }
+  }
+
+  // draw vertical separators for minus/plus buttons
+  if (this->add_plus_minus_buttons)
+  {
+    painter.setPen(
+        QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
+
+    const int x_minus = this->rect_minus.right() + 1;
+    const int x_plus = this->rect_plus.left() - 1;
+
+    painter.drawLine(QPoint(x_minus, this->rect().top()),
+                     QPoint(x_minus, this->rect().bottom()));
+    painter.drawLine(QPoint(x_plus, this->rect().top()),
+                     QPoint(x_plus, this->rect().bottom()));
   }
 
   // labels
