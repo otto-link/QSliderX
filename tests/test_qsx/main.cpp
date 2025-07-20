@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   }
 
   {
-    auto *s = new qsx::SliderInt("Int", INT_MAX, 0, INT_MAX);
+    auto *s = new qsx::SliderInt("Int", INT_MAX, 0, INT_MAX, true, "{:} K");
     layout->addWidget(s);
 
     s->connect(s,

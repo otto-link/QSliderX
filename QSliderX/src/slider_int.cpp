@@ -1,6 +1,7 @@
 /* Copyright (c) 2025 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <format>
 #include <random>
 
 #include <QGraphicsSceneHoverEvent>
@@ -23,9 +24,11 @@ SliderInt::SliderInt(const std::string &label_,
                      int                vmin_,
                      int                vmax_,
                      bool               add_plus_minus_buttons_,
+                     const std::string &value_format_,
                      QWidget           *parent)
     : QWidget(parent), value_init(value_init_), value(value_init_), vmin(vmin_),
-      vmax(vmax_), add_plus_minus_buttons(add_plus_minus_buttons_)
+      vmax(vmax_), add_plus_minus_buttons(add_plus_minus_buttons_),
+      value_format(value_format_)
 {
   QSXLOG->trace("SliderInt::SliderInt");
 
@@ -121,6 +124,11 @@ bool SliderInt::event(QEvent *event)
 }
 
 int SliderInt::get_value() const { return this->value; }
+
+std::string SliderInt::get_value_as_string() const
+{
+  return std::vformat(this->value_format, std::make_format_args(this->value));
+}
 
 void SliderInt::mouseDoubleClickEvent(QMouseEvent *event)
 {
@@ -266,7 +274,7 @@ void SliderInt::paintEvent(QPaintEvent *)
 
   painter.drawText(rect_label,
                    Qt::AlignRight | Qt::AlignVCenter,
-                   std::to_string(this->value).c_str());
+                   this->get_value_as_string().c_str());
 
   // arrows
   QString left = this->is_minus_hovered ? "◀" : "◁";
@@ -386,8 +394,7 @@ void SliderInt::update_geometry()
                        10 * fm.horizontalAdvance(QString("0")) + 6 * this->base_dx;
 
   this->slider_width_min = label_width + QSX_CONFIG->slider.padding_middle +
-                           fm.horizontalAdvance(
-                               std::to_string(this->get_value()).c_str()) +
+                           fm.horizontalAdvance(this->get_value_as_string().c_str()) +
                            6 * this->base_dx;
 
   // rectangles

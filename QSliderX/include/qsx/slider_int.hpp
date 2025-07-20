@@ -23,13 +23,15 @@ public:
             int                vmin_ = -INT_MAX,
             int                vmax_ = INT_MAX,
             bool               add_plus_minus_buttons_ = true,
+            const std::string &value_format_ = "{}",
             QWidget           *parent = nullptr);
 
-  void  apply_text_edit_value();
-  int   get_value() const;
-  bool  set_value(int new_value);
-  void  show_context_menu();
-  QSize sizeHint() const;
+  void        apply_text_edit_value();
+  int         get_value() const;
+  std::string get_value_as_string() const;
+  bool        set_value(int new_value);
+  void        show_context_menu();
+  QSize       sizeHint() const;
 
 Q_SIGNALS:
   void value_changed();     // always
@@ -55,6 +57,7 @@ private:
   int             vmin;
   int             vmax;
   bool            add_plus_minus_buttons;
+  std::string     value_format;
   bool            is_hovered = false;
   bool            is_minus_hovered = false;
   bool            is_plus_hovered = false;
