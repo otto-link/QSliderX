@@ -377,12 +377,14 @@ void SliderRange::update_geometry()
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
 
   // TODO fix
-  this->slider_width = 256;
-  this->slider_width_min = 256;
+  int label_width = fm.horizontalAdvance(this->label.c_str());
+  int paddings = 2 * this->base_dx;
+
+  this->slider_width = paddings + 2 * label_width;
   this->slider_height = 2 * this->base_dy;
 
   // size
-  this->setMinimumWidth(this->slider_width_min);
+  this->setMinimumWidth(this->slider_width);
   this->setMinimumHeight(this->slider_height);
   this->setMaximumHeight(2 * this->slider_height);
 

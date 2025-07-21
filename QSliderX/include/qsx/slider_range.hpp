@@ -74,7 +74,6 @@ private:
   int   base_dx;
   int   base_dy;
   int   slider_width;
-  int   slider_width_min;
   int   slider_height;
   QRect rect_bar;
   QRect rect_label;
