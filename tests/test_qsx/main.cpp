@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     }
 
     {
-      auto *r = new qsx::SliderRange("Range", 2.f, 7.f, 0.f, 10.f, "{:.2f}");
+      auto *r = new qsx::SliderRange("W/hist", 2.f, 7.f, 0.f, 10.f, "{:.2f}");
       layout->addWidget(r);
 
       auto lambda = []()
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     }
 
     {
-      auto *r = new qsx::SliderRange("Range", -5.f, 7.f, 0.f, 10.f, "{:.2f}");
+      auto *r = new qsx::SliderRange("Auto-Range", -5.f, 7.f, 0.f, 10.f, "{:.2f}");
       layout->addWidget(r);
 
       auto lambda = []()
