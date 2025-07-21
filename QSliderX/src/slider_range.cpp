@@ -58,6 +58,7 @@ bool SliderRange::event(QEvent *event)
     this->is_range_hovered = false;
     this->is_onoff_hovered = false;
     this->is_reset_hovered = false;
+    this->is_reset_unit_hovered = false;
     this->update();
   }
   break;
@@ -72,6 +73,7 @@ bool SliderRange::event(QEvent *event)
     this->is_range_hovered = this->rect_range.contains(pos);
     this->is_onoff_hovered = this->rect_onoff.contains(pos);
     this->is_reset_hovered = this->rect_reset.contains(pos);
+    this->is_reset_unit_hovered = this->rect_reset_unit.contains(pos);
     this->update();
   }
   break;
@@ -81,6 +83,16 @@ bool SliderRange::event(QEvent *event)
   }
 
   return QWidget::event(event);
+}
+
+void SliderRange::force_values(float new_value0, float new_value1)
+{
+  bool check_reversed_range = false;
+  bool ret = this->set_value(0, new_value0, check_reversed_range);
+  ret |= this->set_value(1, new_value1, check_reversed_range);
+
+  if (ret)
+    Q_EMIT this->value_has_changed();
 }
 
 bool SliderRange::get_is_enabled() const { return this->is_enabled; }
@@ -147,8 +159,11 @@ void SliderRange::mousePressEvent(QMouseEvent *event)
     }
     else if (this->is_reset_hovered && this->is_enabled)
     {
-      if (this->set_value(0, this->value0_init) || this->set_value(1, this->value1_init))
-        Q_EMIT this->value_has_changed();
+      this->force_values(this->value0_init, this->value1_init);
+    }
+    else if (this->is_reset_unit_hovered && this->is_enabled)
+    {
+      this->force_values(0.f, 1.f);
     }
   }
 
@@ -293,12 +308,20 @@ void SliderRange::paintEvent(QPaintEvent *)
                    Qt::AlignLeft | Qt::AlignVCenter,
                    this->label.c_str());
 
-  painter.drawText(this->rect_reset, Qt::AlignCenter | Qt::AlignVCenter, "R");
+  painter.drawText(this->rect_reset,
+                   Qt::AlignCenter | Qt::AlignVCenter,
+                   QString::fromUtf8(u8"↺"));
+
+  painter.drawText(this->rect_reset_unit,
+                   Qt::AlignCenter | Qt::AlignVCenter,
+                   QString::fromUtf8(u8"-"));
 
   if (this->is_enabled)
     painter.setPen(QSX_CONFIG->global.color_selected);
 
-  painter.drawText(this->rect_onoff, Qt::AlignCenter | Qt::AlignVCenter, "⏻");
+  painter.drawText(this->rect_onoff,
+                   Qt::AlignCenter | Qt::AlignVCenter,
+                   QString::fromUtf8(u8"⏻"));
 
   // buttons border
   painter.setBrush(Qt::NoBrush);
@@ -308,6 +331,8 @@ void SliderRange::paintEvent(QPaintEvent *)
     painter.drawRect(this->rect_onoff.adjusted(0, 2, 0, -2));
   else if (this->is_reset_hovered)
     painter.drawRect(this->rect_reset.adjusted(0, 2, 0, -2));
+  else if (this->is_reset_unit_hovered)
+    painter.drawRect(this->rect_reset_unit.adjusted(0, 2, 0, -2));
 }
 
 void SliderRange::resizeEvent(QResizeEvent *event)
@@ -328,6 +353,12 @@ QSize SliderRange::sizeHint() const
   return QSize(this->slider_width, this->slider_height);
 }
 
+void SliderRange::set_autorange(bool new_state)
+{
+  this->autorange = new_state;
+  this->update_bins();
+}
+
 void SliderRange::set_is_dragging(bool new_state)
 {
   this->is_dragging = new_state;
@@ -345,11 +376,17 @@ void SliderRange::set_is_enabled(bool new_state)
   Q_EMIT this->value_has_changed();
 }
 
-bool SliderRange::set_value(int id, float new_value)
+bool SliderRange::set_value(int id, float new_value, bool check_reversed_range)
 {
+  float cmin = this->vmin;
+  float cmax = this->vmax;
+
   // ensure min value is always below max value...
-  float cmin = id == 0 ? this->vmin : this->value0;
-  float cmax = id == 0 ? this->value1 : this->vmax;
+  if (check_reversed_range)
+  {
+    cmin = id == 0 ? this->vmin : this->value0;
+    cmax = id == 0 ? this->value1 : this->vmax;
+  }
 
   new_value = std::clamp(new_value, cmin, cmax);
 
@@ -373,7 +410,17 @@ bool SliderRange::set_value(int id, float new_value)
 void SliderRange::update_bins()
 {
   if (this->histogram_fct)
+  {
     this->bins = this->histogram_fct();
+    if (this->bins.first.size() && this->autorange)
+    {
+      this->vmin = *std::min_element(bins.first.begin(), bins.first.end());
+      this->vmax = *std::max_element(bins.first.begin(), bins.first.end());
+      this->force_values(this->value0, this->value1);
+      this->update_value_positions();
+      this->update();
+    }
+  }
   else
   {
     this->bins.first.clear();
@@ -392,17 +439,20 @@ void SliderRange::update_geometry()
   int buttons_width = 4 * this->base_dx;
 
   this->slider_width = buttons_width + 2 * label_width;
-  this->slider_height = 2 * this->base_dy;
+  this->slider_height = static_cast<int>(2.25f * static_cast<float>(this->base_dy));
 
   // size
   this->setMinimumWidth(this->slider_width);
   this->setMinimumHeight(this->slider_height);
-  this->setMaximumHeight(2 * this->slider_height);
+  this->setMaximumHeight(this->slider_height + this->base_dy);
 
   // rectangles
   int   base_dx_half = static_cast<int>(0.5f * static_cast<float>(this->base_dx));
   QSize bsize = QSize(this->base_dx + base_dx_half, this->base_dy); // buttons size
 
+  this->rect_reset_unit = QRect(
+      QPoint(this->rect().width() - base_dx_half - 3 * bsize.width(), 0),
+      bsize);
   this->rect_reset = QRect(
       QPoint(this->rect().width() - base_dx_half - 2 * bsize.width(), 0),
       bsize);

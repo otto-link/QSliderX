@@ -35,9 +35,10 @@ public:
   std::string get_value_as_string(int id) const;
   float       get_vmax() const;
   float       get_vmin() const;
+  void        set_autorange(bool new_state);
   void        set_is_dragging(bool new_state);
   void        set_is_enabled(bool new_state);
-  bool        set_value(int id, float new_value);
+  bool        set_value(int id, float new_value, bool check_reversed_range = true);
 
   void set_histogram_fct(std::function<PairVec()> new_histogram_fct);
 
@@ -59,6 +60,7 @@ protected:
   void resizeEvent(QResizeEvent *event) override;
 
 private:
+  void force_values(float new_value0, float new_value1);
   void update_geometry();
   void update_value_positions();
 
@@ -72,6 +74,7 @@ private:
   std::string              value_format;
   PairVec                  bins;
   std::function<PairVec()> histogram_fct = nullptr;
+  bool                     autorange = false;
   //
   int   base_dx;
   int   base_dy;
@@ -93,6 +96,7 @@ private:
   bool  is_range_hovered = false;
   bool  is_onoff_hovered = false;
   bool  is_reset_hovered = false;
+  bool  is_reset_unit_hovered = false;
   bool  is_dragging = false;
   int   dragged_value_id; // min or max
   float value_before_dragging;
