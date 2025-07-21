@@ -94,7 +94,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     QSliderX
-    GIT_REPOSITORY https://github.com/youruser/QSliderX.git
+    GIT_REPOSITORY https://github.com/otto-link/QSliderX.git
     GIT_TAG        main
 )
 
