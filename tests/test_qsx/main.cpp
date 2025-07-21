@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "qsx/internal/logger.hpp"
+#include "qsx/slider_float.hpp"
 #include "qsx/slider_int.hpp"
 #include "qsx/slider_range.hpp"
 
@@ -73,6 +74,62 @@ int main(int argc, char *argv[])
 
       // s->connect(s,
       //            &qsx::SliderInt::value_has_changed,
+      //            [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+    }
+  }
+
+  if (true) // --- SliderFloat
+  {
+    {
+      auto *s = new qsx::SliderFloat("Float", 3, 0, 10);
+      layout->addWidget(s);
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_changed,
+                 [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_has_changed,
+                 [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+    }
+
+    {
+      auto *s = new qsx::SliderFloat("Float", 1e5f, 0, FLT_MAX, true, "{:.3f} K");
+      layout->addWidget(s);
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_has_changed,
+                 [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+    }
+
+    {
+      auto *s = new qsx::SliderFloat("NoLim", 5, -FLT_MAX, FLT_MAX, false, "{:.1f} it.");
+      layout->addWidget(s);
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_has_changed,
+                 [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+    }
+
+    {
+      auto *s = new qsx::SliderFloat("Float", 5, 0, 10, false);
+      layout->addWidget(s);
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_has_changed,
+                 [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
+    }
+
+    {
+      // auto *s = new qsx::SliderFloat("A very long label, actually too long", FLT_MAX);
+      // layout->addWidget(s);
+
+      // s->connect(s,
+      //            &qsx::SliderFloat::value_changed,
+      //            [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+
+      // s->connect(s,
+      //            &qsx::SliderFloat::value_has_changed,
       //            [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
   }

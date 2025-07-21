@@ -11,23 +11,23 @@
 #include "qsx/config.hpp"
 #include "qsx/internal/logger.hpp"
 #include "qsx/internal/utils.hpp"
-#include "qsx/slider_int.hpp"
+#include "qsx/slider_float.hpp"
 
 namespace qsx
 {
 
-SliderInt::SliderInt(const std::string &label_,
-                     int                value_init_,
-                     int                vmin_,
-                     int                vmax_,
-                     bool               add_plus_minus_buttons_,
-                     const std::string &value_format_,
-                     QWidget           *parent)
+SliderFloat::SliderFloat(const std::string &label_,
+                         float              value_init_,
+                         float              vmin_,
+                         float              vmax_,
+                         bool               add_plus_minus_buttons_,
+                         const std::string &value_format_,
+                         QWidget           *parent)
     : QWidget(parent), value_init(value_init_), value(value_init_), vmin(vmin_),
       vmax(vmax_), add_plus_minus_buttons(add_plus_minus_buttons_),
       value_format(value_format_)
 {
-  QSXLOG->trace("SliderInt::SliderInt");
+  QSXLOG->trace("SliderFloat::SliderFloat");
 
   this->label = truncate_string(label_,
                                 static_cast<size_t>(QSX_CONFIG->global.max_label_len));
@@ -39,7 +39,7 @@ SliderInt::SliderInt(const std::string &label_,
   this->update_geometry();
 
   this->connect(this,
-                &SliderInt::value_has_changed,
+                &SliderFloat::value_has_changed,
                 [this]()
                 {
                   this->update_history();
@@ -60,13 +60,13 @@ SliderInt::SliderInt(const std::string &label_,
   this->connect(value_edit,
                 &QLineEdit::editingFinished,
                 this,
-                &SliderInt::apply_text_edit_value);
+                &SliderFloat::apply_text_edit_value);
   this->value_edit->setStyleSheet(this->style_sheet.c_str());
 }
 
-void SliderInt::apply_text_edit_value()
+void SliderFloat::apply_text_edit_value()
 {
-  int new_value = this->value_edit->text().toInt();
+  float new_value = this->value_edit->text().toFloat();
   if (this->set_value(new_value))
     Q_EMIT this->value_has_changed();
 
@@ -74,7 +74,7 @@ void SliderInt::apply_text_edit_value()
   this->update();
 }
 
-bool SliderInt::event(QEvent *event)
+bool SliderFloat::event(QEvent *event)
 {
   switch (event->type())
   {
@@ -113,14 +113,14 @@ bool SliderInt::event(QEvent *event)
   return QWidget::event(event);
 }
 
-int SliderInt::get_value() const { return this->value; }
+float SliderFloat::get_value() const { return this->value; }
 
-std::string SliderInt::get_value_as_string() const
+std::string SliderFloat::get_value_as_string() const
 {
   return std::vformat(this->value_format, std::make_format_args(this->value));
 }
 
-void SliderInt::mouseDoubleClickEvent(QMouseEvent *event)
+void SliderFloat::mouseDoubleClickEvent(QMouseEvent *event)
 {
   if (this->is_bar_hovered)
   {
@@ -135,33 +135,32 @@ void SliderInt::mouseDoubleClickEvent(QMouseEvent *event)
   QWidget::mouseDoubleClickEvent(event);
 }
 
-void SliderInt::mouseMoveEvent(QMouseEvent *event)
+void SliderFloat::mouseMoveEvent(QMouseEvent *event)
 {
   if (this->is_dragging)
   {
     // pixels per unit
     float ppu;
 
-    if (this->vmin == -INT_MAX || this->vmax == INT_MAX || this->vmin == this->vmax)
+    if (this->vmin == -FLT_MAX || this->vmax == FLT_MAX || this->vmin == this->vmax)
       ppu = QSX_CONFIG->slider.ppu;
     else
-      ppu = static_cast<float>(this->rect_bar.width()) /
-            static_cast<float>(this->vmax - this->vmin);
+      ppu = static_cast<float>(this->rect_bar.width()) / (this->vmax - this->vmin);
 
     if (event->modifiers() & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
     else if (event->modifiers() & Qt::ShiftModifier)
       ppu /= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
 
-    int dx = event->position().toPoint().x() - this->pos_x_before_dragging;
-    int dv = static_cast<int>(static_cast<float>(dx) / ppu);
+    int   dx = event->position().toPoint().x() - this->pos_x_before_dragging;
+    float dv = static_cast<float>(dx) / ppu;
     this->set_value(this->value_before_dragging + dv);
   }
 
   QWidget::mouseMoveEvent(event);
 }
 
-void SliderInt::mousePressEvent(QMouseEvent *event)
+void SliderFloat::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
@@ -190,7 +189,7 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
   QWidget::mousePressEvent(event);
 }
 
-void SliderInt::mouseReleaseEvent(QMouseEvent *event)
+void SliderFloat::mouseReleaseEvent(QMouseEvent *event)
 {
   if (this->is_dragging)
   {
@@ -203,7 +202,7 @@ void SliderInt::mouseReleaseEvent(QMouseEvent *event)
   QWidget::mouseReleaseEvent(event);
 }
 
-void SliderInt::paintEvent(QPaintEvent *)
+void SliderFloat::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -220,13 +219,12 @@ void SliderInt::paintEvent(QPaintEvent *)
                           QSX_CONFIG->global.radius);
 
   // value bar
-  if (this->vmin != -INT_MAX && this->vmax != INT_MAX && !this->value_edit->isVisible())
+  if (this->vmin != -FLT_MAX && this->vmax != FLT_MAX && !this->value_edit->isVisible())
   {
-    const int range = this->vmax - this->vmin;
+    const float range = this->vmax - this->vmin;
     if (range > 0)
     {
-      const float r = static_cast<float>(this->value - this->vmin) /
-                      static_cast<float>(range);
+      const float r = (this->value - this->vmin) / range;
       if (r > 0.f)
       {
         const int rcut = static_cast<int>((1.f - r) *
@@ -283,23 +281,23 @@ void SliderInt::paintEvent(QPaintEvent *)
   painter.drawText(this->rect_plus, Qt::AlignCenter | Qt::AlignVCenter, right);
 }
 
-void SliderInt::randomize_value()
+void SliderFloat::randomize_value()
 {
-  std::random_device              rd;
-  std::mt19937                    gen(rd());
-  std::uniform_int_distribution<> dist(vmin, vmax);
+  std::random_device                    rd;
+  std::mt19937                          gen(rd());
+  std::uniform_real_distribution<float> dist(vmin, vmax);
 
   if (this->set_value(dist(gen)))
     Q_EMIT this->value_has_changed();
 }
 
-void SliderInt::resizeEvent(QResizeEvent *event)
+void SliderFloat::resizeEvent(QResizeEvent *event)
 {
   this->update_geometry();
   QWidget::resizeEvent(event);
 }
 
-void SliderInt::set_is_dragging(bool new_state)
+void SliderFloat::set_is_dragging(bool new_state)
 {
   this->is_dragging = new_state;
 
@@ -309,7 +307,7 @@ void SliderInt::set_is_dragging(bool new_state)
     this->setCursor(Qt::ArrowCursor);
 }
 
-bool SliderInt::set_value(int new_value)
+bool SliderFloat::set_value(float new_value)
 {
   new_value = std::clamp(new_value, this->vmin, this->vmax);
 
@@ -327,7 +325,7 @@ bool SliderInt::set_value(int new_value)
   return true;
 }
 
-void SliderInt::show_context_menu()
+void SliderFloat::show_context_menu()
 {
   QMenu menu(this);
   menu.setStyleSheet(this->style_sheet.c_str());
@@ -340,7 +338,7 @@ void SliderInt::show_context_menu()
   // Add history actions
   for (int i = static_cast<int>(this->history.size()) - 1; i >= 0; --i)
   {
-    int      v = history[static_cast<size_t>(i)];
+    float    v = history[static_cast<size_t>(i)];
     QString  hist_label = QString("Set to %1").arg(v);
     QAction *history_action = menu.addAction(hist_label);
     history_action->setData(v); // store value
@@ -364,7 +362,7 @@ void SliderInt::show_context_menu()
       QVariant v = selected->data();
       if (v.isValid())
       {
-        if (this->set_value(v.toInt()))
+        if (this->set_value(v.toFloat()))
           Q_EMIT this->value_has_changed();
       }
     }
@@ -389,9 +387,9 @@ void SliderInt::show_context_menu()
   }
 }
 
-QSize SliderInt::sizeHint() const { return QSize(this->slider_width, this->base_dy); }
+QSize SliderFloat::sizeHint() const { return QSize(this->slider_width, this->base_dy); }
 
-void SliderInt::update_geometry()
+void SliderFloat::update_geometry()
 {
   QFontMetrics fm(this->font());
   this->base_dx = fm.horizontalAdvance(QString("M"));
@@ -431,7 +429,7 @@ void SliderInt::update_geometry()
   this->rect_bar = this->rect().adjusted(gap, 0, -gap, 0);
 }
 
-void SliderInt::update_history()
+void SliderFloat::update_history()
 {
   if (this->history.size() >= QSX_CONFIG->global.max_history)
     this->history.pop_front();
