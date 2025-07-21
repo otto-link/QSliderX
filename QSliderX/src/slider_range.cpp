@@ -8,6 +8,7 @@
 #include <QPainter>
 
 #include "qsx/config.hpp"
+#include "qsx/internal/interpolate1d.hpp"
 #include "qsx/internal/logger.hpp"
 #include "qsx/internal/utils.hpp"
 #include "qsx/slider_range.hpp"
@@ -171,39 +172,100 @@ void SliderRange::paintEvent(QPaintEvent *)
   // value bar
   if (bins.first.size() && bins.first.size() == bins.second.size())
   {
-    // normalized
+    // bins normalization
     float bmax = *std::max_element(bins.second.begin(), bins.second.end());
 
-    const int p0 = this->rect_handle_min.center().x();
-    const int p1 = this->rect_handle_max.center().x();
+    // interpolate bins data
+    Interpolator1D fitp = Interpolator1D(bins.first,
+                                         bins.second,
+                                         InterpolationMethod1D::AKIMA);
 
-    for (size_t k = 0; k < bins.second.size(); ++k)
+    // used to avoid extrapolation
+    float xmin = bins.first.front();
+    float xmax = bins.first.back();
+
+    // draw...
+    int   nn = this->rect_bar.width(); // one per pixel
+    float dr = 1.f / static_cast<float>(nn - 1);
+    int   p0 = this->rect_handle_min.center().x();
+    int   p1 = this->rect_handle_max.center().x();
+    int   gap = QSX_CONFIG->global.radius;
+
+    for (int k = 0; k < nn - 1; ++k)
     {
-      float v = 0.9f * bins.second[k] / bmax;
-      int   pv0 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
-                                 static_cast<float>(k) /
-                                 static_cast<float>(bins.second.size()));
-      int   pv1 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
-                                 static_cast<float>(k + 1) /
-                                 static_cast<float>(bins.second.size()));
-      int dy = static_cast<int>(static_cast<float>(this->rect_bar.height()) * (1.f - v));
+      float r0 = static_cast<float>(k) * dr;
+      float r1 = static_cast<float>(k + 1) * dr;
+
+      // value
+      float v0 = r0 * (this->vmax - this->vmin) + this->vmin;
+      float v1 = r1 * (this->vmax - this->vmin) + this->vmin;
+
+      float factor = 0.9f;
+      float y0 = (v0 >= xmin && v0 <= xmax) ? factor * fitp(v0) / bmax : 0.f;
+      float y1 = (v1 >= xmin && v1 <= xmax) ? factor * fitp(v1) / bmax : 0.f;
+
+      y0 = std::clamp(y0, 0.f, 1.f);
+      y1 = std::clamp(y1, 0.f, 1.f);
+
+      // draw positions (add margin beginning/end)
+      float lx = static_cast<float>(this->rect_bar.width() - 2 * gap);
+      int   pos0 = gap + static_cast<int>(r0 * lx);
+      int   pos1 = gap + static_cast<int>(r1 * lx);
+
+      int dy0 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
+                                 (1.f - y0));
+      int dy1 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
+                                 (1.f - y1));
 
       painter.setPen(Qt::NoPen);
-      if (pv0 >= p0 && pv1 <= p1)
+      if (pos0 >= p0 && pos1 <= p1)
       {
         painter.setBrush(QSX_CONFIG->global.color_selected);
       }
       else
         painter.setBrush(QSX_CONFIG->global.color_faded);
 
-      if (k == 0)
-        pv0 += QSX_CONFIG->global.radius;
-      else if (k == bins.second.size() - 1)
-        pv1 -= QSX_CONFIG->global.radius;
+      const QPoint points[4] = {
+          QPoint(pos0, dy0 + 1),
+          QPoint(pos1, dy1 + 1),
+          QPoint(pos1, this->rect_bar.height() - 1),
+          QPoint(pos0, this->rect_bar.height() - 1),
+      };
 
-      painter.drawRect(
-          QRect(QPoint(pv0, dy + 1), QPoint(pv1, this->rect_bar.height() - 1)));
+      painter.drawPolygon(points, 4);
     }
+
+    // const int p0 = this->rect_handle_min.center().x();
+    // const int p1 = this->rect_handle_max.center().x();
+
+    // for (size_t k = 0; k < bins.second.size(); ++k)
+    // {
+    //   float v = 0.9f * bins.second[k] / bmax;
+    //   int   pv0 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
+    //                              static_cast<float>(k) /
+    //                              static_cast<float>(bins.second.size()));
+    //   int   pv1 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
+    //                              static_cast<float>(k + 1) /
+    //                              static_cast<float>(bins.second.size()));
+    //   int dy = static_cast<int>(static_cast<float>(this->rect_bar.height()) * (1.f -
+    //   v));
+
+    //   painter.setPen(Qt::NoPen);
+    //   if (pv0 >= p0 && pv1 <= p1)
+    //   {
+    //     painter.setBrush(QSX_CONFIG->global.color_selected);
+    //   }
+    //   else
+    //     painter.setBrush(QSX_CONFIG->global.color_faded);
+
+    //   if (k == 0)
+    //     pv0 += QSX_CONFIG->global.radius;
+    //   else if (k == bins.second.size() - 1)
+    //     pv1 -= QSX_CONFIG->global.radius;
+
+    //   painter.drawRect(
+    //       QRect(QPoint(pv0, dy + 1), QPoint(pv1, this->rect_bar.height() - 1)));
+    // }
   }
   else
   {
@@ -317,12 +379,12 @@ void SliderRange::update_geometry()
   // TODO fix
   this->slider_width = 256;
   this->slider_width_min = 256;
-  this->slider_height = 3 * this->base_dy;
+  this->slider_height = 2 * this->base_dy;
 
   // size
   this->setMinimumWidth(this->slider_width_min);
   this->setMinimumHeight(this->slider_height);
-  this->setMaximumHeight(this->slider_height);
+  this->setMaximumHeight(2 * this->slider_height);
 
   // rectangles
   this->rect_bar = this->rect().adjusted(0, 0, 0, -this->base_dy);
