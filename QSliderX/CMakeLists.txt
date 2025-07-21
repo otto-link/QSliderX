@@ -19,5 +19,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${QSX_INCLUDE}
                                                    ${CMAKE_BINARY_DIR}/include)
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog Qt6::Core
-                                              Qt6::Widgets)
+target_link_libraries(
+  ${PROJECT_NAME} PRIVATE GSL::gsl GSL::gslcblas spdlog::spdlog Qt6::Core
+                          Qt6::Widgets)

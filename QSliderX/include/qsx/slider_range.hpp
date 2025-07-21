@@ -5,12 +5,15 @@
 #include <cfloat> // FLT_MAX
 #include <deque>
 #include <functional>
+#include <utility>
 
 #include <QLineEdit>
 #include <QWidget>
 
 namespace qsx
 {
+
+using PairVec = std::pair<std::vector<float>, std::vector<float>>;
 
 class SliderRange : public QWidget
 {
@@ -31,11 +34,12 @@ public:
   std::string get_value_as_string(int id) const;
   float       get_vmax() const;
   float       get_vmin() const;
-  void        set_histogram_fct(std::function<std::vector<float>()> new_histogram_fct);
   void        set_is_dragging(bool new_state);
   bool        set_value(int id, float new_value);
 
-  QSize sizeHint() const;
+  void set_histogram_fct(std::function<PairVec()> new_histogram_fct);
+
+  QSize sizeHint() const override;
 
 signals:
   void value_changed();     // always
@@ -56,16 +60,16 @@ private:
   void update_geometry();
   void update_value_positions();
 
-  std::string                         label;
-  float                               value0_init;
-  float                               value1_init;
-  float                               value0;
-  float                               value1;
-  float                               vmin;
-  float                               vmax;
-  std::string                         value_format;
-  std::function<std::vector<float>()> histogram_fct = nullptr;
-  std::vector<float>                  bins;
+  std::string              label;
+  float                    value0_init;
+  float                    value1_init;
+  float                    value0;
+  float                    value1;
+  float                    vmin;
+  float                    vmax;
+  std::string              value_format;
+  PairVec                  bins;
+  std::function<PairVec()> histogram_fct = nullptr;
   //
   int   base_dx;
   int   base_dy;

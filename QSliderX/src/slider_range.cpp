@@ -169,22 +169,23 @@ void SliderRange::paintEvent(QPaintEvent *)
                           QSX_CONFIG->global.radius);
 
   // value bar
-  if (bins.size())
+  if (bins.first.size() && bins.first.size() == bins.second.size())
   {
     // normalized
-    float bmax = *std::max_element(bins.begin(), bins.end());
+    float bmax = *std::max_element(bins.second.begin(), bins.second.end());
 
     const int p0 = this->rect_handle_min.center().x();
     const int p1 = this->rect_handle_max.center().x();
 
-    for (size_t k = 0; k < bins.size(); ++k)
+    for (size_t k = 0; k < bins.second.size(); ++k)
     {
-      float v = 0.9f * bins[k] / bmax;
+      float v = 0.9f * bins.second[k] / bmax;
       int   pv0 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
-                                 static_cast<float>(k) / static_cast<float>(bins.size()));
+                                 static_cast<float>(k) /
+                                 static_cast<float>(bins.second.size()));
       int   pv1 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
                                  static_cast<float>(k + 1) /
-                                 static_cast<float>(bins.size()));
+                                 static_cast<float>(bins.second.size()));
       int dy = static_cast<int>(static_cast<float>(this->rect_bar.height()) * (1.f - v));
 
       painter.setPen(Qt::NoPen);
@@ -197,7 +198,7 @@ void SliderRange::paintEvent(QPaintEvent *)
 
       if (k == 0)
         pv0 += QSX_CONFIG->global.radius;
-      else if (k == bins.size() - 1)
+      else if (k == bins.second.size() - 1)
         pv1 -= QSX_CONFIG->global.radius;
 
       painter.drawRect(
@@ -249,7 +250,7 @@ void SliderRange::resizeEvent(QResizeEvent *event)
   QWidget::resizeEvent(event);
 }
 
-void SliderRange::set_histogram_fct(std::function<std::vector<float>()> new_histogram_fct)
+void SliderRange::set_histogram_fct(std::function<PairVec()> new_histogram_fct)
 {
   this->histogram_fct = new_histogram_fct;
   this->update_bins();
@@ -301,7 +302,10 @@ void SliderRange::update_bins()
   if (this->histogram_fct)
     this->bins = this->histogram_fct();
   else
-    this->bins.clear();
+  {
+    this->bins.first.clear();
+    this->bins.second.clear();
+  }
 }
 
 void SliderRange::update_geometry()

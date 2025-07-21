@@ -96,8 +96,10 @@ int main(int argc, char *argv[])
 
     auto lambda = []()
     {
-      std::vector<float> hist =
-          {1, 3, 4, 10, 12, 3, 0, 4, 10, 12, 5, 1, 6, 1, 3, 3, 5, 1, 6};
+      // bin center / bin sum
+      std::pair<std::vector<float>, std::vector<float>> hist = {
+          {-2, -1, -0.5, 0, 0.1, 0.2, 0.3, 0.5, 5},
+          {1, 3, 4, 10, 12, 3, 0, 4, 10}};
       return hist;
     };
 
