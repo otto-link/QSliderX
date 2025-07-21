@@ -305,9 +305,9 @@ void SliderRange::paintEvent(QPaintEvent *)
   painter.setPen(QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
 
   if (this->is_onoff_hovered)
-    painter.drawRect(this->rect_onoff);
+    painter.drawRect(this->rect_onoff.adjusted(0, 2, 0, -2));
   else if (this->is_reset_hovered)
-    painter.drawRect(this->rect_reset);
+    painter.drawRect(this->rect_reset.adjusted(0, 2, 0, -2));
 }
 
 void SliderRange::resizeEvent(QResizeEvent *event)
