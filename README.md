@@ -2,6 +2,9 @@
 
 QSliderX is a C++ library that extends Qt6 with custom slider widgets inspired by Blender's UX. It provides enhanced sliders for numeric and range values, with optional bounds and dynamic visual feedback such as histograms.
 
+<img width="350" height="547" alt="Screenshot_2025-07-21_21-50-00" src="https://github.com/user-attachments/assets/348573cb-202b-4345-9a44-110908359919" />
+
+
 ## Features
 
 - **`SliderInt`**  
