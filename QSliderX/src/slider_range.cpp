@@ -56,6 +56,8 @@ bool SliderRange::event(QEvent *event)
     this->is_min_hovered = false;
     this->is_max_hovered = false;
     this->is_range_hovered = false;
+    this->is_onoff_hovered = false;
+    this->is_reset_hovered = false;
     this->update();
   }
   break;
@@ -68,6 +70,8 @@ bool SliderRange::event(QEvent *event)
     this->is_min_hovered = this->rect_handle_min.adjusted(-1, -1, 1, 1).contains(pos);
     this->is_max_hovered = this->rect_handle_max.adjusted(-1, -1, 1, 1).contains(pos);
     this->is_range_hovered = this->rect_range.contains(pos);
+    this->is_onoff_hovered = this->rect_onoff.contains(pos);
+    this->is_reset_hovered = this->rect_reset.contains(pos);
     this->update();
   }
   break;
@@ -75,8 +79,11 @@ bool SliderRange::event(QEvent *event)
   default:
     break;
   }
+
   return QWidget::event(event);
 }
+
+bool SliderRange::get_is_enabled() const { return this->is_enabled; }
 
 float SliderRange::get_value(int id) const
 {
@@ -120,19 +127,28 @@ void SliderRange::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    if (this->is_min_hovered)
+    if (this->is_min_hovered && this->is_enabled)
     {
       this->dragged_value_id = 0;
       this->value_before_dragging = this->value0;
       this->pos_x_before_dragging = event->position().toPoint().x();
       this->set_is_dragging(true);
     }
-    else if (this->is_max_hovered)
+    else if (this->is_max_hovered && this->is_enabled)
     {
       this->dragged_value_id = 1;
       this->value_before_dragging = this->value1;
       this->pos_x_before_dragging = event->position().toPoint().x();
       this->set_is_dragging(true);
+    }
+    else if (this->is_onoff_hovered)
+    {
+      this->set_is_enabled(!this->get_is_enabled());
+    }
+    else if (this->is_reset_hovered && this->is_enabled)
+    {
+      if (this->set_value(0, this->value0_init) || this->set_value(1, this->value1_init))
+        Q_EMIT this->value_has_changed();
     }
   }
 
@@ -154,6 +170,8 @@ void SliderRange::mouseReleaseEvent(QMouseEvent *event)
 
 void SliderRange::paintEvent(QPaintEvent *)
 {
+  const int radius = QSX_CONFIG->global.radius;
+
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
 
@@ -164,130 +182,108 @@ void SliderRange::paintEvent(QPaintEvent *)
           ? QPen(QSX_CONFIG->global.color_hovered, QSX_CONFIG->global.width_hovered)
           : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
 
-  //
-  painter.drawRoundedRect(this->rect_bar,
-                          QSX_CONFIG->global.radius,
-                          QSX_CONFIG->global.radius);
+  painter.drawRoundedRect(this->rect_bar, radius, radius);
 
-  // value bar
-  if (bins.first.size() && bins.first.size() == bins.second.size())
+  if (this->is_enabled)
   {
-    // bins normalization
-    float bmax = *std::max_element(bins.second.begin(), bins.second.end());
 
-    // interpolate bins data
-    Interpolator1D fitp = Interpolator1D(bins.first,
-                                         bins.second,
-                                         InterpolationMethod1D::AKIMA);
-
-    // used to avoid extrapolation
-    float xmin = bins.first.front();
-    float xmax = bins.first.back();
-
-    // draw...
-    int   nn = this->rect_bar.width(); // one per pixel
-    float dr = 1.f / static_cast<float>(nn - 1);
-    int   p0 = this->rect_handle_min.center().x();
-    int   p1 = this->rect_handle_max.center().x();
-    int   gap = QSX_CONFIG->global.radius;
-
-    for (int k = 0; k < nn - 1; ++k)
+    // value bar
+    if (bins.first.size() && bins.first.size() == bins.second.size())
     {
-      float r0 = static_cast<float>(k) * dr;
-      float r1 = static_cast<float>(k + 1) * dr;
+      // bins normalization
+      float bmax = *std::max_element(bins.second.begin(), bins.second.end());
 
-      // value
-      float v0 = r0 * (this->vmax - this->vmin) + this->vmin;
-      float v1 = r1 * (this->vmax - this->vmin) + this->vmin;
+      // interpolate bins data
+      Interpolator1D fitp = Interpolator1D(bins.first,
+                                           bins.second,
+                                           InterpolationMethod1D::AKIMA);
 
-      float factor = 0.9f;
-      float y0 = (v0 >= xmin && v0 <= xmax) ? factor * fitp(v0) / bmax : 0.f;
-      float y1 = (v1 >= xmin && v1 <= xmax) ? factor * fitp(v1) / bmax : 0.f;
+      // used to avoid extrapolation
+      float xmin = bins.first.front();
+      float xmax = bins.first.back();
 
-      y0 = std::clamp(y0, 0.f, 1.f);
-      y1 = std::clamp(y1, 0.f, 1.f);
+      // draw...
+      int   nn = this->rect_bar.width(); // one per pixel
+      float dr = 1.f / static_cast<float>(nn - 1);
+      int   p0 = this->rect_handle_min.center().x();
+      int   p1 = this->rect_handle_max.center().x();
+      int   gap = radius;
 
-      // draw positions (add margin beginning/end)
-      float lx = static_cast<float>(this->rect_bar.width() - 2 * gap);
-      int   pos0 = gap + static_cast<int>(r0 * lx);
-      int   pos1 = gap + static_cast<int>(r1 * lx);
-
-      int dy0 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
-                                 (1.f - y0));
-      int dy1 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
-                                 (1.f - y1));
-
-      painter.setPen(Qt::NoPen);
-      if (pos0 >= p0 && pos1 <= p1)
+      for (int k = 0; k < nn - 1; ++k)
       {
-        painter.setBrush(QSX_CONFIG->global.color_selected);
+        float r0 = static_cast<float>(k) * dr;
+        float r1 = static_cast<float>(k + 1) * dr;
+
+        // value
+        float v0 = r0 * (this->vmax - this->vmin) + this->vmin;
+        float v1 = r1 * (this->vmax - this->vmin) + this->vmin;
+
+        float factor = 0.9f;
+        float y0 = (v0 >= xmin && v0 <= xmax) ? factor * fitp(v0) / bmax : 0.f;
+        float y1 = (v1 >= xmin && v1 <= xmax) ? factor * fitp(v1) / bmax : 0.f;
+
+        y0 = std::clamp(y0, 0.f, 1.f);
+        y1 = std::clamp(y1, 0.f, 1.f);
+
+        // draw positions (add margin beginning/end)
+        float lx = static_cast<float>(this->rect_bar.width() - 2 * gap);
+        int   pos0 = gap + static_cast<int>(r0 * lx);
+        int   pos1 = gap + static_cast<int>(r1 * lx);
+
+        int dy0 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
+                                   (1.f - y0));
+        int dy1 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
+                                   (1.f - y1));
+
+        painter.setPen(Qt::NoPen);
+        if (pos0 >= p0 && pos1 <= p1)
+        {
+          painter.setBrush(QSX_CONFIG->global.color_selected);
+        }
+        else
+          painter.setBrush(QSX_CONFIG->global.color_faded);
+
+        const QPoint points[4] = {
+            QPoint(pos0, dy0 + 1),
+            QPoint(pos1, dy1 + 1),
+            QPoint(pos1, this->rect_bar.height() - 1),
+            QPoint(pos0, this->rect_bar.height() - 1),
+        };
+
+        painter.drawPolygon(points, 4);
       }
-      else
-        painter.setBrush(QSX_CONFIG->global.color_faded);
-
-      const QPoint points[4] = {
-          QPoint(pos0, dy0 + 1),
-          QPoint(pos1, dy1 + 1),
-          QPoint(pos1, this->rect_bar.height() - 1),
-          QPoint(pos0, this->rect_bar.height() - 1),
-      };
-
-      painter.drawPolygon(points, 4);
+    }
+    else
+    {
+      painter.setBrush(QSX_CONFIG->global.color_selected);
+      painter.setPen(Qt::NoPen);
+      painter.drawRect(this->rect_range.adjusted(1, 1, -1, -1));
     }
 
-    // const int p0 = this->rect_handle_min.center().x();
-    // const int p1 = this->rect_handle_max.center().x();
+    // handles
+    painter.setBrush(QBrush(QSX_CONFIG->global.color_bg));
 
-    // for (size_t k = 0; k < bins.second.size(); ++k)
-    // {
-    //   float v = 0.9f * bins.second[k] / bmax;
-    //   int   pv0 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
-    //                              static_cast<float>(k) /
-    //                              static_cast<float>(bins.second.size()));
-    //   int   pv1 = static_cast<int>(static_cast<float>(this->rect_bar.width()) *
-    //                              static_cast<float>(k + 1) /
-    //                              static_cast<float>(bins.second.size()));
-    //   int dy = static_cast<int>(static_cast<float>(this->rect_bar.height()) * (1.f -
-    //   v));
+    painter.setPen(
+        this->is_min_hovered
+            ? QPen(QSX_CONFIG->global.color_hovered, QSX_CONFIG->global.width_hovered)
+            : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
+    painter.drawEllipse(this->rect_handle_min);
 
-    //   painter.setPen(Qt::NoPen);
-    //   if (pv0 >= p0 && pv1 <= p1)
-    //   {
-    //     painter.setBrush(QSX_CONFIG->global.color_selected);
-    //   }
-    //   else
-    //     painter.setBrush(QSX_CONFIG->global.color_faded);
+    painter.setPen(
+        this->is_max_hovered
+            ? QPen(QSX_CONFIG->global.color_hovered, QSX_CONFIG->global.width_hovered)
+            : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
+    painter.drawEllipse(this->rect_handle_max);
 
-    //   if (k == 0)
-    //     pv0 += QSX_CONFIG->global.radius;
-    //   else if (k == bins.second.size() - 1)
-    //     pv1 -= QSX_CONFIG->global.radius;
+    // values
+    painter.setBrush(QBrush(QSX_CONFIG->global.color_text));
+    painter.setPen(QPen(QSX_CONFIG->global.color_text));
 
-    //   painter.drawRect(
-    //       QRect(QPoint(pv0, dy + 1), QPoint(pv1, this->rect_bar.height() - 1)));
-    // }
+    painter.drawText(this->rect_handle_min.center() + QPoint(0, this->base_dy),
+                     this->get_value_as_string(0).c_str());
+    painter.drawText(this->rect_handle_max.center() + QPoint(0, this->base_dy),
+                     this->get_value_as_string(1).c_str());
   }
-  else
-  {
-    painter.setBrush(QSX_CONFIG->global.color_selected);
-    painter.setPen(Qt::NoPen);
-    painter.drawRect(this->rect_range.adjusted(1, 1, -1, -1));
-  }
-
-  // handles
-  painter.setBrush(QBrush(QSX_CONFIG->global.color_bg));
-
-  painter.setPen(
-      this->is_min_hovered
-          ? QPen(QSX_CONFIG->global.color_hovered, QSX_CONFIG->global.width_hovered)
-          : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
-  painter.drawEllipse(this->rect_handle_min);
-
-  painter.setPen(
-      this->is_max_hovered
-          ? QPen(QSX_CONFIG->global.color_hovered, QSX_CONFIG->global.width_hovered)
-          : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
-  painter.drawEllipse(this->rect_handle_max);
 
   // labels
   painter.setBrush(QBrush(QSX_CONFIG->global.color_text));
@@ -297,13 +293,21 @@ void SliderRange::paintEvent(QPaintEvent *)
                    Qt::AlignLeft | Qt::AlignVCenter,
                    this->label.c_str());
 
-  // painter.drawText(rect_label, Qt::AlignRight | Qt::AlignVCenter, "|+-R");
+  painter.drawText(this->rect_reset, Qt::AlignCenter | Qt::AlignVCenter, "R");
 
-  // values
-  painter.drawText(this->rect_handle_min.center() + QPoint(0, this->base_dy),
-                   this->get_value_as_string(0).c_str());
-  painter.drawText(this->rect_handle_max.center() + QPoint(0, this->base_dy),
-                   this->get_value_as_string(1).c_str());
+  if (this->is_enabled)
+    painter.setPen(QSX_CONFIG->global.color_selected);
+
+  painter.drawText(this->rect_onoff, Qt::AlignCenter | Qt::AlignVCenter, "⏻");
+
+  // buttons border
+  painter.setBrush(Qt::NoBrush);
+  painter.setPen(QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
+
+  if (this->is_onoff_hovered)
+    painter.drawRect(this->rect_onoff);
+  else if (this->is_reset_hovered)
+    painter.drawRect(this->rect_reset);
 }
 
 void SliderRange::resizeEvent(QResizeEvent *event)
@@ -332,6 +336,13 @@ void SliderRange::set_is_dragging(bool new_state)
     this->setCursor(Qt::SizeHorCursor);
   else
     this->setCursor(Qt::ArrowCursor);
+}
+
+void SliderRange::set_is_enabled(bool new_state)
+{
+  this->is_enabled = new_state;
+  this->update();
+  Q_EMIT this->value_has_changed();
 }
 
 bool SliderRange::set_value(int id, float new_value)
@@ -377,10 +388,10 @@ void SliderRange::update_geometry()
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
 
   // TODO fix
-  int label_width = fm.horizontalAdvance(this->label.c_str());
-  int paddings = 2 * this->base_dx;
+  int label_width = 2 * this->base_dx + fm.horizontalAdvance(this->label.c_str());
+  int buttons_width = 4 * this->base_dx;
 
-  this->slider_width = paddings + 2 * label_width;
+  this->slider_width = buttons_width + 2 * label_width;
   this->slider_height = 2 * this->base_dy;
 
   // size
@@ -389,6 +400,16 @@ void SliderRange::update_geometry()
   this->setMaximumHeight(2 * this->slider_height);
 
   // rectangles
+  int   base_dx_half = static_cast<int>(0.5f * static_cast<float>(this->base_dx));
+  QSize bsize = QSize(this->base_dx + base_dx_half, this->base_dy); // buttons size
+
+  this->rect_reset = QRect(
+      QPoint(this->rect().width() - base_dx_half - 2 * bsize.width(), 0),
+      bsize);
+  this->rect_onoff = QRect(
+      QPoint(this->rect().width() - base_dx_half - 1 * bsize.width(), 0),
+      bsize);
+
   this->rect_bar = this->rect().adjusted(0, 0, 0, -this->base_dy);
   this->rect_label = QRect(QPoint(this->base_dx, 0),
                            QSize(this->rect_bar.width() - this->base_dx, this->base_dy));

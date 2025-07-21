@@ -30,11 +30,13 @@ public:
               const std::string &value_format_ = "{}",
               QWidget           *parent = nullptr);
 
+  bool        get_is_enabled() const;
   float       get_value(int id) const;
   std::string get_value_as_string(int id) const;
   float       get_vmax() const;
   float       get_vmin() const;
   void        set_is_dragging(bool new_state);
+  void        set_is_enabled(bool new_state);
   bool        set_value(int id, float new_value);
 
   void set_histogram_fct(std::function<PairVec()> new_histogram_fct);
@@ -80,11 +82,17 @@ private:
   QRect rect_handle_min;
   QRect rect_handle_max;
   QRect rect_range;
+  QRect rect_onoff;
+  QRect rect_reset;
+  QRect rect_reset_unit;
   //
+  bool  is_enabled = true;
   bool  is_hovered = false;
   bool  is_min_hovered = false;
   bool  is_max_hovered = false;
   bool  is_range_hovered = false;
+  bool  is_onoff_hovered = false;
+  bool  is_reset_hovered = false;
   bool  is_dragging = false;
   int   dragged_value_id; // min or max
   float value_before_dragging;
