@@ -1,9 +1,17 @@
 # QSliderX
 
+QSliderX is a C++ library that extends Qt6 with custom slider widgets inspired by Blender's UX. It provides enhanced sliders for numeric and range values, with optional bounds and dynamic visual feedback such as histograms.
+
 ## Features
 
-- Node-based graphical interface
-- Supports custom node definitions
+- **`SliderInt`**  
+  An integer slider with optional lower and upper bounds. Includes a compact "Blender-style" value bar and supports precise dragging and direct input.
+
+- **`SliderFloat`**  
+  A floating-point slider, also supporting optional bounds and precision control.
+
+- **`SliderRange`**  
+  A double-ended range slider for selecting a min/max interval. Can optionally display a live histogram behind the slider for feedback.
 
 ## Build Instructions (for Developers)
 
@@ -24,8 +32,7 @@ cmake ..
 make
 ```
 
-
-### 📎 CMake Requirements
+### CMake Requirements
 
 | Tool   | Minimum Version                             |
 | ------ | ------------------------------------------- |
