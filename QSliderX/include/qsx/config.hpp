@@ -26,7 +26,7 @@ public:
     QColor color_bg = QColor("#2B2B2B");
 
     float width_border = 1.f;
-    float width_hovered = 2.f;
+    float width_hovered = 1.f;
     int   radius = 4;
 
     int    max_label_len = 16;
