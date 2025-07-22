@@ -30,7 +30,6 @@ public:
               const std::string &value_format_ = "{}",
               QWidget           *parent = nullptr);
 
-  void        apply_autorange();
   bool        get_is_enabled() const;
   float       get_value(int id) const;
   std::string get_value_as_string(int id) const;

@@ -39,15 +39,6 @@ SliderRange::SliderRange(const std::string &label_,
   this->update_geometry();
 }
 
-void SliderRange::apply_autorange()
-{
-  bool autorange_bckp = this->autorange;
-
-  this->autorange = true;
-  this->on_update_bins();
-  this->autorange = autorange_bckp;
-}
-
 bool SliderRange::event(QEvent *event)
 {
   switch (event->type())
@@ -211,10 +202,17 @@ void SliderRange::on_update_bins()
   if (this->histogram_fct)
   {
     this->bins = this->histogram_fct();
+
     if (this->bins.first.size() && this->autorange)
     {
+      // retrieve min/max from histogram
       this->vmin = *std::min_element(bins.first.begin(), bins.first.end());
       this->vmax = *std::max_element(bins.first.begin(), bins.first.end());
+
+      // but still makes sure current values are within the range
+      this->vmin = std::min(this->value0, this->vmin);
+      this->vmax = std::max(this->value1, this->vmax);
+
       this->force_values(this->value0, this->value1);
       this->update_value_positions();
       this->update();
