@@ -49,7 +49,7 @@ signals:
   void value_has_changed(); // only end of edit
 
 public slots:
-  void update_bins();
+  void on_update_bins();
 
 protected:
   bool event(QEvent *event) override;

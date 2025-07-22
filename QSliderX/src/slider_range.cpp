@@ -187,6 +187,27 @@ void SliderRange::mouseReleaseEvent(QMouseEvent *event)
   // of context menu for instance
 }
 
+void SliderRange::on_update_bins()
+{
+  if (this->histogram_fct)
+  {
+    this->bins = this->histogram_fct();
+    if (this->bins.first.size() && this->autorange)
+    {
+      this->vmin = *std::min_element(bins.first.begin(), bins.first.end());
+      this->vmax = *std::max_element(bins.first.begin(), bins.first.end());
+      this->force_values(this->value0, this->value1);
+      this->update_value_positions();
+      this->update();
+    }
+  }
+  else
+  {
+    this->bins.first.clear();
+    this->bins.second.clear();
+  }
+}
+
 void SliderRange::paintEvent(QPaintEvent *)
 {
   const int radius = QSX_CONFIG->global.radius;
@@ -348,7 +369,7 @@ void SliderRange::resizeEvent(QResizeEvent *event)
 void SliderRange::set_histogram_fct(std::function<PairVec()> new_histogram_fct)
 {
   this->histogram_fct = new_histogram_fct;
-  this->update_bins();
+  this->on_update_bins();
   this->update();
 }
 
@@ -360,7 +381,7 @@ QSize SliderRange::sizeHint() const
 void SliderRange::set_autorange(bool new_state)
 {
   this->autorange = new_state;
-  this->update_bins();
+  this->on_update_bins();
 }
 
 void SliderRange::set_is_dragging(bool new_state)
@@ -409,27 +430,6 @@ bool SliderRange::set_value(int id, float new_value, bool check_reversed_range)
   }
 
   return true;
-}
-
-void SliderRange::update_bins()
-{
-  if (this->histogram_fct)
-  {
-    this->bins = this->histogram_fct();
-    if (this->bins.first.size() && this->autorange)
-    {
-      this->vmin = *std::min_element(bins.first.begin(), bins.first.end());
-      this->vmax = *std::max_element(bins.first.begin(), bins.first.end());
-      this->force_values(this->value0, this->value1);
-      this->update_value_positions();
-      this->update();
-    }
-  }
-  else
-  {
-    this->bins.first.clear();
-    this->bins.second.clear();
-  }
 }
 
 void SliderRange::update_geometry()
