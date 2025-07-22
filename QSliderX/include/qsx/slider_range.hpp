@@ -30,6 +30,7 @@ public:
               const std::string &value_format_ = "{}",
               QWidget           *parent = nullptr);
 
+  void        apply_autorange();
   bool        get_is_enabled() const;
   float       get_value(int id) const;
   std::string get_value_as_string(int id) const;
@@ -88,6 +89,7 @@ private:
   QRect rect_onoff;
   QRect rect_reset;
   QRect rect_reset_unit;
+  QRect rect_autorange;
   //
   bool  is_enabled = true;
   bool  is_hovered = false;
@@ -97,6 +99,7 @@ private:
   bool  is_onoff_hovered = false;
   bool  is_reset_hovered = false;
   bool  is_reset_unit_hovered = false;
+  bool  is_autorange_hovered = false;
   bool  is_dragging = false;
   int   dragged_value_id; // min or max
   float value_before_dragging;

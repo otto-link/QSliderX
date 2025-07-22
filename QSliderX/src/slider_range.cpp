@@ -39,6 +39,15 @@ SliderRange::SliderRange(const std::string &label_,
   this->update_geometry();
 }
 
+void SliderRange::apply_autorange()
+{
+  bool autorange_bckp = this->autorange;
+
+  this->autorange = true;
+  this->on_update_bins();
+  this->autorange = autorange_bckp;
+}
+
 bool SliderRange::event(QEvent *event)
 {
   switch (event->type())
@@ -59,6 +68,7 @@ bool SliderRange::event(QEvent *event)
     this->is_onoff_hovered = false;
     this->is_reset_hovered = false;
     this->is_reset_unit_hovered = false;
+    this->is_autorange_hovered = false;
     this->update();
   }
   break;
@@ -74,6 +84,7 @@ bool SliderRange::event(QEvent *event)
     this->is_onoff_hovered = this->rect_onoff.contains(pos);
     this->is_reset_hovered = this->rect_reset.contains(pos);
     this->is_reset_unit_hovered = this->rect_reset_unit.contains(pos);
+    this->is_autorange_hovered = this->rect_autorange.contains(pos);
     this->update();
   }
   break;
@@ -141,31 +152,39 @@ void SliderRange::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    if (this->is_min_hovered && this->is_enabled)
-    {
-      this->dragged_value_id = 0;
-      this->value_before_dragging = this->value0;
-      this->pos_x_before_dragging = event->position().toPoint().x();
-      this->set_is_dragging(true);
-    }
-    else if (this->is_max_hovered && this->is_enabled)
-    {
-      this->dragged_value_id = 1;
-      this->value_before_dragging = this->value1;
-      this->pos_x_before_dragging = event->position().toPoint().x();
-      this->set_is_dragging(true);
-    }
-    else if (this->is_onoff_hovered)
+    if (this->is_onoff_hovered)
     {
       this->set_is_enabled(!this->get_is_enabled());
     }
-    else if (this->is_reset_hovered && this->is_enabled)
+
+    if (this->is_enabled)
     {
-      this->force_values(this->value0_init, this->value1_init);
-    }
-    else if (this->is_reset_unit_hovered && this->is_enabled)
-    {
-      this->force_values(0.f, 1.f);
+      if (this->is_min_hovered)
+      {
+        this->dragged_value_id = 0;
+        this->value_before_dragging = this->value0;
+        this->pos_x_before_dragging = event->position().toPoint().x();
+        this->set_is_dragging(true);
+      }
+      else if (this->is_max_hovered)
+      {
+        this->dragged_value_id = 1;
+        this->value_before_dragging = this->value1;
+        this->pos_x_before_dragging = event->position().toPoint().x();
+        this->set_is_dragging(true);
+      }
+      else if (this->is_reset_hovered)
+      {
+        this->force_values(this->value0_init, this->value1_init);
+      }
+      else if (this->is_reset_unit_hovered)
+      {
+        this->force_values(0.f, 1.f);
+      }
+      else if (this->is_autorange_hovered)
+      {
+        this->set_autorange(!this->autorange);
+      }
     }
   }
 
@@ -335,18 +354,29 @@ void SliderRange::paintEvent(QPaintEvent *)
 
   painter.drawText(this->rect_reset,
                    Qt::AlignCenter | Qt::AlignVCenter,
-                   QString::fromUtf8(u8"↺"));
+                   QString::fromUtf8(u8"R"));
 
   painter.drawText(this->rect_reset_unit,
                    Qt::AlignCenter | Qt::AlignVCenter,
                    QString::fromUtf8(u8"-"));
 
+  if (this->autorange)
+    painter.setPen(QSX_CONFIG->global.color_selected);
+  else
+    painter.setPen(QPen(QSX_CONFIG->global.color_text));
+
+  painter.drawText(this->rect_autorange,
+                   Qt::AlignCenter | Qt::AlignVCenter,
+                   QString::fromUtf8(u8"A"));
+
   if (this->is_enabled)
     painter.setPen(QSX_CONFIG->global.color_selected);
+  else
+    painter.setPen(QPen(QSX_CONFIG->global.color_text));
 
   painter.drawText(this->rect_onoff,
                    Qt::AlignCenter | Qt::AlignVCenter,
-                   QString::fromUtf8(u8"⏻"));
+                   QString::fromUtf8(u8"●"));
 
   // buttons border
   painter.setBrush(Qt::NoBrush);
@@ -358,6 +388,8 @@ void SliderRange::paintEvent(QPaintEvent *)
     painter.drawRect(this->rect_reset.adjusted(0, 2, 0, -2));
   else if (this->is_reset_unit_hovered)
     painter.drawRect(this->rect_reset_unit.adjusted(0, 2, 0, -2));
+  else if (this->is_autorange_hovered)
+    painter.drawRect(this->rect_autorange.adjusted(0, 2, 0, -2));
 }
 
 void SliderRange::resizeEvent(QResizeEvent *event)
@@ -455,6 +487,9 @@ void SliderRange::update_geometry()
   QSize bsize = QSize(this->base_dx + base_dx_half, this->base_dy); // buttons size
 
   this->rect_reset_unit = QRect(
+      QPoint(this->rect().width() - base_dx_half - 4 * bsize.width(), 0),
+      bsize);
+  this->rect_autorange = QRect(
       QPoint(this->rect().width() - base_dx_half - 3 * bsize.width(), 0),
       bsize);
   this->rect_reset = QRect(
