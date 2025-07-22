@@ -330,11 +330,14 @@ bool SliderFloat::set_value(float new_value)
 
 void SliderFloat::show_context_menu()
 {
+  bool is_range_limited = this->vmin != -FLT_MAX && this->vmax != FLT_MAX;
+
   QMenu menu(this);
   menu.setStyleSheet(this->style_sheet.c_str());
 
-  // add predefined actions
-  QAction *randomize_action = menu.addAction("Randomize");
+  // add predefined actions (only add randmoize option when the range
+  // is limited to avoid uncoherent values )
+  QAction *randomize_action = is_range_limited ? menu.addAction("Randomize") : nullptr;
   QAction *reset_action = menu.addAction("Reset");
   menu.addSeparator()->setText("History");
 
