@@ -165,6 +165,11 @@ void SliderFloat::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
+    bool  is_range_limited = this->vmin != -FLT_MAX && this->vmax != FLT_MAX;
+    float delta = is_range_limited
+                      ? (this->vmax - this->vmin) / QSX_CONFIG->slider.button_ticks
+                      : 1.f;
+
     if (this->is_bar_hovered)
     {
       this->value_before_dragging = this->value;
@@ -173,12 +178,12 @@ void SliderFloat::mousePressEvent(QMouseEvent *event)
     }
     else if (this->is_minus_hovered)
     {
-      if (this->set_value(this->get_value() - 1))
+      if (this->set_value(this->get_value() - delta))
         Q_EMIT this->value_has_changed();
     }
     else if (this->is_plus_hovered)
     {
-      if (this->set_value(this->get_value() + 1))
+      if (this->set_value(this->get_value() + delta))
         Q_EMIT this->value_has_changed();
     }
   }
