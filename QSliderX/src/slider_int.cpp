@@ -158,7 +158,8 @@ void SliderInt::mouseMoveEvent(QMouseEvent *event)
     this->set_value(this->value_before_dragging + dv);
   }
 
-  QWidget::mouseMoveEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderInt::mousePressEvent(QMouseEvent *event)
@@ -187,7 +188,8 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
     this->show_context_menu();
   }
 
-  QWidget::mousePressEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderInt::mouseReleaseEvent(QMouseEvent *event)
@@ -200,7 +202,8 @@ void SliderInt::mouseReleaseEvent(QMouseEvent *event)
       Q_EMIT this->value_has_changed();
   }
 
-  QWidget::mouseReleaseEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderInt::paintEvent(QPaintEvent *)

@@ -130,6 +130,8 @@ void SliderRange::mouseMoveEvent(QMouseEvent *event)
     int   dx = event->position().toPoint().x() - this->pos_x_before_dragging;
     float dv = static_cast<float>(dx) / ppu;
     this->set_value(this->dragged_value_id, this->value_before_dragging + dv);
+
+    event->accept();
   }
 
   QWidget::mouseMoveEvent(event);
@@ -167,7 +169,8 @@ void SliderRange::mousePressEvent(QMouseEvent *event)
     }
   }
 
-  QWidget::mousePressEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderRange::mouseReleaseEvent(QMouseEvent *event)
@@ -180,7 +183,8 @@ void SliderRange::mouseReleaseEvent(QMouseEvent *event)
       Q_EMIT this->value_has_changed();
   }
 
-  QWidget::mouseReleaseEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderRange::paintEvent(QPaintEvent *)

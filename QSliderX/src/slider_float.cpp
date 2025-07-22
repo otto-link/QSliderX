@@ -132,7 +132,8 @@ void SliderFloat::mouseDoubleClickEvent(QMouseEvent *event)
     this->update();
   }
 
-  QWidget::mouseDoubleClickEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderFloat::mouseMoveEvent(QMouseEvent *event)
@@ -186,7 +187,8 @@ void SliderFloat::mousePressEvent(QMouseEvent *event)
     this->show_context_menu();
   }
 
-  QWidget::mousePressEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderFloat::mouseReleaseEvent(QMouseEvent *event)
@@ -199,7 +201,8 @@ void SliderFloat::mouseReleaseEvent(QMouseEvent *event)
       Q_EMIT this->value_has_changed();
   }
 
-  QWidget::mouseReleaseEvent(event);
+  // no call to the base class event handler to avoid unwanted closing
+  // of context menu for instance
 }
 
 void SliderFloat::paintEvent(QPaintEvent *)
