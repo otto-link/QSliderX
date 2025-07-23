@@ -338,8 +338,16 @@ void SliderRange::paintEvent(QPaintEvent *)
 
     painter.drawText(this->rect_handle_min.center() + QPoint(0, this->base_dy),
                      this->get_value_as_string(0).c_str());
-    painter.drawText(this->rect_handle_max.center() + QPoint(0, this->base_dy),
-                     this->get_value_as_string(1).c_str());
+
+    // ensure max label is not out the bounding box of the widget
+    QFontMetrics fm(this->font());
+    int label_v1_width = fm.horizontalAdvance(this->get_value_as_string(1).c_str());
+    int label_v1_pos = std::min(this->rect_handle_max.center().x(),
+                                this->rect_bar.width() - label_v1_width);
+
+    painter.drawText(
+        QPoint(label_v1_pos, this->rect_handle_max.center().y() + this->base_dy),
+        this->get_value_as_string(1).c_str());
   }
 
   // labels
