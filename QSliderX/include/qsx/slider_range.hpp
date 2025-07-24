@@ -88,6 +88,7 @@ private:
   QRect rect_onoff;
   QRect rect_reset;
   QRect rect_reset_unit;
+  QRect rect_center;
   QRect rect_autorange;
   //
   bool  is_enabled = true;
@@ -99,6 +100,7 @@ private:
   bool  is_reset_hovered = false;
   bool  is_reset_unit_hovered = false;
   bool  is_autorange_hovered = false;
+  bool  is_center_hovered = false;
   bool  is_dragging = false;
   int   dragged_value_id; // min or max
   float value_before_dragging;
