@@ -94,7 +94,7 @@ void SliderRange::force_values(float new_value0, float new_value1)
   ret |= this->set_value(1, new_value1, check_reversed_range);
 
   if (ret)
-    Q_EMIT this->value_has_changed();
+    Q_EMIT this->edit_ended();
 }
 
 bool SliderRange::get_is_enabled() const { return this->is_enabled; }
@@ -190,7 +190,7 @@ void SliderRange::mouseReleaseEvent(QMouseEvent *event)
     this->set_is_dragging(false);
 
     if (this->get_value(this->dragged_value_id) != this->value_before_dragging)
-      Q_EMIT this->value_has_changed();
+      Q_EMIT this->edit_ended();
   }
 
   // no call to the base class event handler to avoid unwanted closing
@@ -436,7 +436,7 @@ void SliderRange::set_is_enabled(bool new_state)
 {
   this->is_enabled = new_state;
   this->update();
-  Q_EMIT this->value_has_changed();
+  Q_EMIT this->edit_ended();
 }
 
 bool SliderRange::set_value(int id, float new_value, bool check_reversed_range)

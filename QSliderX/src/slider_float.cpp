@@ -39,7 +39,7 @@ SliderFloat::SliderFloat(const std::string &label_,
   this->update_geometry();
 
   this->connect(this,
-                &SliderFloat::value_has_changed,
+                &SliderFloat::edit_ended,
                 [this]()
                 {
                   this->update_history();
@@ -68,7 +68,7 @@ void SliderFloat::apply_text_edit_value()
 {
   float new_value = this->value_edit->text().toFloat();
   if (this->set_value(new_value))
-    Q_EMIT this->value_has_changed();
+    Q_EMIT this->edit_ended();
 
   this->value_edit->setVisible(false);
   this->update();
@@ -179,12 +179,12 @@ void SliderFloat::mousePressEvent(QMouseEvent *event)
     else if (this->is_minus_hovered)
     {
       if (this->set_value(this->get_value() - delta))
-        Q_EMIT this->value_has_changed();
+        Q_EMIT this->edit_ended();
     }
     else if (this->is_plus_hovered)
     {
       if (this->set_value(this->get_value() + delta))
-        Q_EMIT this->value_has_changed();
+        Q_EMIT this->edit_ended();
     }
   }
   else if (event->button() == Qt::RightButton)
@@ -203,7 +203,7 @@ void SliderFloat::mouseReleaseEvent(QMouseEvent *event)
     this->set_is_dragging(false);
 
     if (this->value != this->value_before_dragging)
-      Q_EMIT this->value_has_changed();
+      Q_EMIT this->edit_ended();
   }
 
   // no call to the base class event handler to avoid unwanted closing
@@ -296,7 +296,7 @@ void SliderFloat::randomize_value()
   std::uniform_real_distribution<float> dist(vmin, vmax);
 
   if (this->set_value(dist(gen)))
-    Q_EMIT this->value_has_changed();
+    Q_EMIT this->edit_ended();
 }
 
 void SliderFloat::resizeEvent(QResizeEvent *event)
@@ -366,7 +366,7 @@ void SliderFloat::show_context_menu()
     else if (selected == reset_action)
     {
       if (this->set_value(this->value_init))
-        Q_EMIT this->value_has_changed();
+        Q_EMIT this->edit_ended();
     }
     else
     {
@@ -374,7 +374,7 @@ void SliderFloat::show_context_menu()
       if (v.isValid())
       {
         if (this->set_value(v.toFloat()))
-          Q_EMIT this->value_has_changed();
+          Q_EMIT this->edit_ended();
       }
     }
   }

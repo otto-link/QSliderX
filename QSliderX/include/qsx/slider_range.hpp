@@ -45,8 +45,8 @@ public:
   QSize sizeHint() const override;
 
 signals:
-  void value_changed();     // always
-  void value_has_changed(); // only end of edit
+  void value_changed(); // always
+  void edit_ended();    // only end of edit
 
 public slots:
   void on_update_bins();

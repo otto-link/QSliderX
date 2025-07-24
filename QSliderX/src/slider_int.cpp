@@ -39,7 +39,7 @@ SliderInt::SliderInt(const std::string &label_,
   this->update_geometry();
 
   this->connect(this,
-                &SliderInt::value_has_changed,
+                &SliderInt::edit_ended,
                 [this]()
                 {
                   this->update_history();
@@ -68,7 +68,7 @@ void SliderInt::apply_text_edit_value()
 {
   int new_value = this->value_edit->text().toInt();
   if (this->set_value(new_value))
-    Q_EMIT this->value_has_changed();
+    Q_EMIT this->edit_ended();
 
   this->value_edit->setVisible(false);
   this->update();
@@ -175,12 +175,12 @@ void SliderInt::mousePressEvent(QMouseEvent *event)
     else if (this->is_minus_hovered)
     {
       if (this->set_value(this->get_value() - 1))
-        Q_EMIT this->value_has_changed();
+        Q_EMIT this->edit_ended();
     }
     else if (this->is_plus_hovered)
     {
       if (this->set_value(this->get_value() + 1))
-        Q_EMIT this->value_has_changed();
+        Q_EMIT this->edit_ended();
     }
   }
   else if (event->button() == Qt::RightButton)
@@ -199,7 +199,7 @@ void SliderInt::mouseReleaseEvent(QMouseEvent *event)
     this->set_is_dragging(false);
 
     if (this->value != this->value_before_dragging)
-      Q_EMIT this->value_has_changed();
+      Q_EMIT this->edit_ended();
   }
 
   // no call to the base class event handler to avoid unwanted closing
@@ -293,7 +293,7 @@ void SliderInt::randomize_value()
   std::uniform_int_distribution<> dist(vmin, vmax);
 
   if (this->set_value(dist(gen)))
-    Q_EMIT this->value_has_changed();
+    Q_EMIT this->edit_ended();
 }
 
 void SliderInt::resizeEvent(QResizeEvent *event)
@@ -360,7 +360,7 @@ void SliderInt::show_context_menu()
     else if (selected == reset_action)
     {
       if (this->set_value(this->value_init))
-        Q_EMIT this->value_has_changed();
+        Q_EMIT this->edit_ended();
     }
     else
     {
@@ -368,7 +368,7 @@ void SliderInt::show_context_menu()
       if (v.isValid())
       {
         if (this->set_value(v.toInt()))
-          Q_EMIT this->value_has_changed();
+          Q_EMIT this->edit_ended();
       }
     }
   }

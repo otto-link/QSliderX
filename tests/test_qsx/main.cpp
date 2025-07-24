@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
                  [s]() { QSXLOG->trace("value: {}", s->get_value()); });
 
       s->connect(s,
-                 &qsx::SliderInt::value_has_changed,
+                 &qsx::SliderInt::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->connect(s,
-                 &qsx::SliderInt::value_has_changed,
+                 &qsx::SliderInt::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->connect(s,
-                 &qsx::SliderInt::value_has_changed,
+                 &qsx::SliderInt::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->connect(s,
-                 &qsx::SliderInt::value_has_changed,
+                 &qsx::SliderInt::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
       //            [s]() { QSXLOG->trace("value: {}", s->get_value()); });
 
       // s->connect(s,
-      //            &qsx::SliderInt::value_has_changed,
+      //            &qsx::SliderInt::edit_ended,
       //            [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
   }
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
                  [s]() { QSXLOG->trace("value: {}", s->get_value()); });
 
       s->connect(s,
-                 &qsx::SliderFloat::value_has_changed,
+                 &qsx::SliderFloat::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->connect(s,
-                 &qsx::SliderFloat::value_has_changed,
+                 &qsx::SliderFloat::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->connect(s,
-                 &qsx::SliderFloat::value_has_changed,
+                 &qsx::SliderFloat::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->connect(s,
-                 &qsx::SliderFloat::value_has_changed,
+                 &qsx::SliderFloat::edit_ended,
                  [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
 
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
       //            [s]() { QSXLOG->trace("value: {}", s->get_value()); });
 
       // s->connect(s,
-      //            &qsx::SliderFloat::value_has_changed,
+      //            &qsx::SliderFloat::edit_ended,
       //            [s]() { QSXLOG->trace("value has changed: {}", s->get_value()); });
     }
   }
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 
       r->connect(
           r,
-          &qsx::SliderRange::value_has_changed,
+          &qsx::SliderRange::edit_ended,
           [r]() {
             QSXLOG->trace("value has changed: {} {}", r->get_value(0), r->get_value(1));
           });
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
       r->connect(
           r,
-          &qsx::SliderRange::value_has_changed,
+          &qsx::SliderRange::edit_ended,
           [r]() {
             QSXLOG->trace("value has changed: {} {}", r->get_value(0), r->get_value(1));
           });
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
       r->connect(
           r,
-          &qsx::SliderRange::value_has_changed,
+          &qsx::SliderRange::edit_ended,
           [r]() {
             QSXLOG->trace("value has changed: {} {}", r->get_value(0), r->get_value(1));
           });
