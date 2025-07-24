@@ -25,7 +25,7 @@ public:
     QColor color_faded = QColor("#5B5B5B");
     QColor color_bg = QColor("#2B2B2B");
 
-    float width_border = 1.f;
+    float width_border = 0.5f;
     float width_hovered = 1.f;
     int   radius = 4;
 
