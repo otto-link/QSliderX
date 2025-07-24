@@ -19,13 +19,13 @@ public:
   struct Global
   {
     QColor color_text = QColor("#FFFFFF");
-    QColor color_border = QColor("#DFE1E2");
+    QColor color_border = QColor("#5B5B5B");
     QColor color_hovered = QColor("#FFFFFF");
     QColor color_selected = QColor("#4772B3");
     QColor color_faded = QColor("#5B5B5B");
     QColor color_bg = QColor("#2B2B2B");
 
-    float width_border = 0.5f;
+    float width_border = 1.f;
     float width_hovered = 1.f;
     int   radius = 4;
 
