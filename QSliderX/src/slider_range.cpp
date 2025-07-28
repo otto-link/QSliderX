@@ -61,6 +61,7 @@ bool SliderRange::event(QEvent *event)
     this->is_reset_unit_hovered = false;
     this->is_center_hovered = false;
     this->is_autorange_hovered = false;
+    this->is_autozoom_hovered = false;
     this->update();
   }
   break;
@@ -78,6 +79,7 @@ bool SliderRange::event(QEvent *event)
     this->is_reset_unit_hovered = this->rect_reset_unit.contains(pos);
     this->is_center_hovered = this->rect_center.contains(pos);
     this->is_autorange_hovered = this->rect_autorange.contains(pos);
+    this->is_autozoom_hovered = this->rect_autozoom.contains(pos);
     this->update();
   }
   break;
@@ -178,6 +180,10 @@ void SliderRange::mousePressEvent(QMouseEvent *event)
       {
         this->set_autorange(!this->autorange);
       }
+      else if (this->is_autozoom_hovered)
+      {
+        this->set_autozoom(!this->autozoom);
+      }
       else if (this->is_center_hovered)
       {
         float v = 0.5f * (this->value1 - this->value0);
@@ -235,6 +241,14 @@ void SliderRange::on_update_bins()
 void SliderRange::paintEvent(QPaintEvent *)
 {
   const int radius = QSX_CONFIG->global.radius;
+
+  // dynamically adjust range
+  if (this->autozoom)
+  {
+    float range = std::max(0.001f, this->value1 - this->value0);
+    this->vmin = this->value0 - 0.1f * range;
+    this->vmax = this->value1 + 0.1f * range;
+  }
 
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -392,6 +406,15 @@ void SliderRange::paintEvent(QPaintEvent *)
                    Qt::AlignCenter | Qt::AlignVCenter,
                    QString::fromUtf8(u8"A"));
 
+  if (this->autozoom)
+    painter.setPen(QSX_CONFIG->global.color_selected);
+  else
+    painter.setPen(QPen(QSX_CONFIG->global.color_text));
+
+  painter.drawText(this->rect_autozoom,
+                   Qt::AlignCenter | Qt::AlignVCenter,
+                   QString::fromUtf8(u8"Z"));
+
   if (this->is_enabled)
     painter.setPen(QSX_CONFIG->global.color_selected);
   else
@@ -415,6 +438,8 @@ void SliderRange::paintEvent(QPaintEvent *)
     painter.drawRect(this->rect_center.adjusted(0, 2, 0, -2));
   else if (this->is_autorange_hovered)
     painter.drawRect(this->rect_autorange.adjusted(0, 2, 0, -2));
+  else if (this->is_autozoom_hovered)
+    painter.drawRect(this->rect_autozoom.adjusted(0, 2, 0, -2));
 }
 
 void SliderRange::resizeEvent(QResizeEvent *event)
@@ -439,6 +464,12 @@ void SliderRange::set_autorange(bool new_state)
 {
   this->autorange = new_state;
   this->on_update_bins();
+}
+
+void SliderRange::set_autozoom(bool new_state)
+{
+  this->autozoom = new_state;
+  this->update();
 }
 
 void SliderRange::set_is_dragging(bool new_state)
@@ -512,6 +543,9 @@ void SliderRange::update_geometry()
   QSize bsize = QSize(this->base_dx + base_dx_half, this->base_dy); // buttons size
 
   this->rect_reset_unit = QRect(
+      QPoint(this->rect().width() - base_dx_half - 6 * bsize.width(), 0),
+      bsize);
+  this->rect_autozoom = QRect(
       QPoint(this->rect().width() - base_dx_half - 5 * bsize.width(), 0),
       bsize);
   this->rect_autorange = QRect(

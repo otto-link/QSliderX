@@ -36,6 +36,7 @@ public:
   float       get_vmax() const;
   float       get_vmin() const;
   void        set_autorange(bool new_state);
+  void        set_autozoom(bool new_state);
   void        set_is_dragging(bool new_state);
   void        set_is_enabled(bool new_state);
   bool        set_value(int id, float new_value, bool check_reversed_range = true);
@@ -75,6 +76,7 @@ private:
   PairVec                  bins;
   std::function<PairVec()> histogram_fct = nullptr;
   bool                     autorange = false;
+  bool                     autozoom = false;
   //
   int   base_dx;
   int   base_dy;
@@ -90,6 +92,7 @@ private:
   QRect rect_reset_unit;
   QRect rect_center;
   QRect rect_autorange;
+  QRect rect_autozoom;
   //
   bool  is_enabled = true;
   bool  is_hovered = false;
@@ -100,6 +103,7 @@ private:
   bool  is_reset_hovered = false;
   bool  is_reset_unit_hovered = false;
   bool  is_autorange_hovered = false;
+  bool  is_autozoom_hovered = false;
   bool  is_center_hovered = false;
   bool  is_dragging = false;
   int   dragged_value_id; // min or max
