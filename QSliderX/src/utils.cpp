@@ -16,6 +16,12 @@ void resize_font(QWidget *widget, int relative_size_modification)
   widget->setFont(font);
 }
 
+int text_height(QWidget *widget)
+{
+  QFontMetrics fm(widget->font());
+  return fm.height();
+}
+
 int text_width(QWidget *widget, const std::string &text)
 {
   QFontMetrics fm(widget->font());

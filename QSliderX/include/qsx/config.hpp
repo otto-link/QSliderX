@@ -35,8 +35,11 @@ public:
 
   struct Canvas
   {
-    int   point_radius = 6;
+    int   point_radius = 7;
+    int   value_arc_width = 6;
     float ppu_multiplier_fine_tuning = 10.f;
+    float wheel_diff = 0.05f;
+    float wheel_multiplier_fine_tuning = 10.f;
   } canvas;
 
   struct Slider

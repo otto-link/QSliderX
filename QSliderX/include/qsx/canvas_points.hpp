@@ -25,13 +25,16 @@ public:
 
   std::vector<float> get_points_x() const;
   std::vector<float> get_points_y() const;
+  std::vector<float> get_points_z() const;
   void               set_bg_image(const QImage &new_bg_image);
   void               set_connected_points(bool new_state);
+  void               set_draw_z_value(bool new_state);
   std::string        get_value_as_string(float v) const;
   void               set_is_dragging(bool new_state);
   void set_points(const std::vector<float> &new_x, const std::vector<float> &new_y);
   void set_points_x(const std::vector<float> &new_x);
   void set_points_y(const std::vector<float> &new_y);
+  void set_points_z(const std::vector<float> &new_z);
 
   QSize sizeHint() const override;
 
@@ -47,6 +50,7 @@ protected:
   void mouseReleaseEvent(QMouseEvent *event) override;
   void paintEvent(QPaintEvent *event) override;
   void resizeEvent(QResizeEvent *event) override;
+  void wheelEvent(QWheelEvent *event) override;
 
 private:
   void   add_point(float x, float y);
@@ -62,8 +66,10 @@ private:
   float              ymax;
   std::string        value_format;
   bool               connected_points = false;
+  bool               draw_z_value = true;
   std::vector<float> points_x = {};
   std::vector<float> points_y = {};
+  std::vector<float> points_z = {}; // value at pt in [0, 1]
   QImage             bg_image = QImage();
   //
   int   base_dx;

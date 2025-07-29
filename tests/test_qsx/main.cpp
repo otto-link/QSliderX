@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
       std::vector<float> y = {0.5f, 0.5f, 0.6f};
       s->set_points(x, y);
       s->set_connected_points(true);
+      s->set_draw_z_value(false);
       s->set_bg_image(QImage("bg.png"));
 
       s->connect(s, &qsx::CanvasPoints::value_changed, [s]() { QSXLOG->trace("value"); });

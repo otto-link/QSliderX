@@ -13,6 +13,7 @@ namespace qsx
 
 void resize_font(QWidget *widget, int relative_size_modification);
 
+int text_height(QWidget *widget);
 int text_width(QWidget *widget, const std::string &text);
 
 std::string truncate_string(const std::string &input, size_t max_length);

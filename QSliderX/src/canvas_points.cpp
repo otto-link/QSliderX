@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QHoverEvent>
 #include <QPainter>
+#include <QtMath>
 
 #include "qsx/canvas_points.hpp"
 #include "qsx/config.hpp"
@@ -41,6 +42,7 @@ void CanvasPoints::add_point(float x, float y)
 {
   this->points_x.push_back(x);
   this->points_y.push_back(y);
+  this->points_z.push_back(1.f);
   this->update();
   Q_EMIT this->value_changed();
 }
@@ -108,6 +110,8 @@ std::vector<float> CanvasPoints::get_points_x() const { return this->points_x; }
 
 std::vector<float> CanvasPoints::get_points_y() const { return this->points_y; }
 
+std::vector<float> CanvasPoints::get_points_z() const { return this->points_z; }
+
 std::string CanvasPoints::get_value_as_string(float v) const
 {
   return std::vformat(this->value_format, std::make_format_args(v));
@@ -153,12 +157,14 @@ void CanvasPoints::mouseMoveEvent(QMouseEvent *event)
     this->points_y[this->hovered_point_id] = this->value_y_before_dragging - dvy;
 
     // check bounds
-    this->points_x[this->hovered_point_id] = std::max(
+    this->points_x[this->hovered_point_id] = std::clamp(
+        this->points_x[this->hovered_point_id],
         this->xmin,
-        std::min(this->xmax, this->points_x[this->hovered_point_id]));
-    this->points_y[this->hovered_point_id] = std::max(
+        this->xmax);
+    this->points_y[this->hovered_point_id] = std::clamp(
+        this->points_y[this->hovered_point_id],
         this->ymin,
-        std::min(this->ymax, this->points_y[this->hovered_point_id]));
+        this->ymax);
 
     this->update();
 
@@ -212,6 +218,7 @@ void CanvasPoints::mouseReleaseEvent(QMouseEvent *event)
 void CanvasPoints::paintEvent(QPaintEvent *)
 {
   const int radius = QSX_CONFIG->global.radius;
+  const int point_radius = QSX_CONFIG->canvas.point_radius;
 
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -224,9 +231,6 @@ void CanvasPoints::paintEvent(QPaintEvent *)
           : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
 
   painter.drawRoundedRect(this->rect(), radius, radius);
-
-  painter.setPen(QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
-  painter.drawRoundedRect(this->rect_points, radius, radius);
 
   // background image
   if (!this->bg_image.isNull())
@@ -241,24 +245,42 @@ void CanvasPoints::paintEvent(QPaintEvent *)
                    this->label.c_str());
 
   // points
-  painter.setPen(QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
-
   for (size_t k = 0; k < this->points_x.size(); ++k)
   {
     bool toggle = (SINT(k) == this->hovered_point_id);
 
+    QPoint pos = this->xy_to_canvas_position(this->points_x[k], this->points_y[k]);
+
+    // point value
+    if (this->draw_z_value)
+    {
+      int arc_width = QSX_CONFIG->canvas.value_arc_width;
+
+      painter.setPen(Qt::NoPen);
+      painter.setBrush(QBrush(QSX_CONFIG->global.color_faded));
+
+      QPoint delta = QPoint(-point_radius - arc_width, -point_radius - arc_width);
+      int    lx = 2 * (point_radius + arc_width);
+
+      int   alpha = SINT(this->points_z[k] * 360.f * 16.f);
+      QRect rect_arc = QRect(pos + delta, QSize(lx, lx));
+      painter.drawPie(rect_arc, 90 * 16 - alpha, alpha);
+    }
+
+    // point itself
+    painter.setPen(QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
     painter.setBrush(toggle ? QBrush(QSX_CONFIG->global.color_selected)
                             : QBrush(QSX_CONFIG->global.color_bg));
 
-    QPoint pos = this->xy_to_canvas_position(this->points_x[k], this->points_y[k]);
-
-    painter.drawEllipse(pos,
-                        QSX_CONFIG->canvas.point_radius,
-                        QSX_CONFIG->canvas.point_radius);
+    painter.drawEllipse(pos, point_radius, point_radius);
 
     // connections
     if (this->connected_points && k < this->points_x.size() - 1)
     {
+      painter.setPen(
+          QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
+      painter.setBrush(Qt::NoBrush);
+
       QPoint pos_next = this->xy_to_canvas_position(this->points_x[k + 1],
                                                     this->points_y[k + 1]);
       painter.drawLine(pos, pos_next);
@@ -266,22 +288,41 @@ void CanvasPoints::paintEvent(QPaintEvent *)
   }
 
   // display value if dragging
-  if (this->is_dragging)
+  if (this->hovered_point_id >= 0) // this->is_dragging)
   {
     painter.setPen(QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
 
     std::string sx = this->get_value_as_string(this->points_x[this->hovered_point_id]);
     std::string sy = this->get_value_as_string(this->points_y[this->hovered_point_id]);
-    std::string txt = sx + ", " + sy;
+    std::string sz = this->get_value_as_string(this->points_z[this->hovered_point_id]);
+    std::string txt;
+
+    if (this->draw_z_value)
+      txt = "(" + sx + ", " + sy + ", " + sz + ")";
+    else
+      txt = "(" + sx + ", " + sy + ")";
 
     QPoint pos = this->xy_to_canvas_position(this->points_x[this->hovered_point_id],
                                              this->points_y[this->hovered_point_id]);
 
     resize_font(this, -2);
-    painter.drawText(QRect(pos, QSize(64, 64)),
-                     Qt::AlignCenter | Qt::AlignVCenter,
+    int w = text_width(this, txt);
+    int h = text_height(this);
+    int dy = h + QSX_CONFIG->canvas.point_radius + QSX_CONFIG->canvas.value_arc_width;
+
+    // keep text within the visible rectangle
+    QPoint text_pos = pos + QPoint(0, -dy);
+    text_pos.setX(std::min(text_pos.x(), this->rect_points.right() - w));
+    if (text_pos.y() <= 0)
+      text_pos.setY(pos.y() + dy - h);
+
+    painter.setFont(this->font());
+    painter.drawText(QRect(text_pos, QSize(w, h)),
+                     Qt::AlignLeft | Qt::AlignVCenter,
                      txt.c_str());
+
     resize_font(this, 2);
+    painter.setFont(this->font());
   }
 }
 
@@ -289,6 +330,7 @@ void CanvasPoints::remove_point(int idx)
 {
   this->points_x.erase(this->points_x.begin() + idx);
   this->points_y.erase(this->points_y.begin() + idx);
+  this->points_z.erase(this->points_z.begin() + idx);
   this->update();
   Q_EMIT this->value_changed();
 }
@@ -312,11 +354,20 @@ void CanvasPoints::set_connected_points(bool new_state)
   this->update();
 }
 
+void CanvasPoints::set_draw_z_value(bool new_state)
+{
+  this->draw_z_value = new_state;
+  this->update();
+}
+
 void CanvasPoints::set_points(const std::vector<float> &new_x,
                               const std::vector<float> &new_y)
 {
   this->set_points_x(new_x);
   this->set_points_y(new_y);
+
+  std::vector<float> new_z(new_x.size(), 1.f);
+  this->set_points_z(new_z);
 }
 
 void CanvasPoints::set_points_x(const std::vector<float> &new_x)
@@ -329,6 +380,13 @@ void CanvasPoints::set_points_x(const std::vector<float> &new_x)
 void CanvasPoints::set_points_y(const std::vector<float> &new_y)
 {
   this->points_y = new_y;
+  this->update();
+  Q_EMIT this->value_changed();
+}
+
+void CanvasPoints::set_points_z(const std::vector<float> &new_z)
+{
+  this->points_z = new_z;
   this->update();
   Q_EMIT this->value_changed();
 }
@@ -386,6 +444,7 @@ void CanvasPoints::update_geometry()
                                             this->base_dy,
                                             -this->base_dx,
                                             -this->base_dx);
+  this->rect_points = this->rect();
   this->rect_label = QRect(QPoint(this->base_dx, 0),
                            QSize(this->rect().width() - this->base_dx, this->base_dy));
 }
@@ -402,6 +461,28 @@ QPoint CanvasPoints::xy_to_canvas_position(float x, float y)
            SINT((1.f - ry) * SFLOAT(this->rect_points.height()));
 
   return QPoint(px, py);
+}
+
+void CanvasPoints::wheelEvent(QWheelEvent *event)
+{
+  if (this->hovered_point_id >= 0 && this->draw_z_value)
+  {
+    float diff = QSX_CONFIG->canvas.wheel_diff;
+    if (event->modifiers() & Qt::ControlModifier)
+      diff /= QSX_CONFIG->canvas.wheel_multiplier_fine_tuning;
+
+    float delta = event->angleDelta().y() > 0 ? diff : -diff;
+    this->points_z[this->hovered_point_id] += delta;
+    this->points_z[this->hovered_point_id] = std::clamp(
+        this->points_z[this->hovered_point_id],
+        0.f,
+        1.f);
+
+    this->update();
+
+    Q_EMIT this->value_changed();
+    Q_EMIT this->edit_ended();
+  }
 }
 
 } // namespace qsx
