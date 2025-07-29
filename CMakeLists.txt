@@ -18,11 +18,15 @@ else()
       -Wnull-dereference -Wnon-virtual-dtor -Woverloaded-virtual \
       -Wzero-as-null-pointer-constant -Wduplicated-cond \
       -Wduplicated-branches -Wlogical-op -Wuseless-cast \
-      -Wshadow -Wsign-conversion -Wconversion -Wold-style-cast \
+      -Wshadow -Wconversion -Wold-style-cast \
       ")
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
+
+# --- copy data
+file(COPY ${CMAKE_SOURCE_DIR}/QSliderX/data/bg.png
+     DESTINATION ${EXECUTABLE_OUTPUT_PATH}/.)
 
 # ---  dependencies
 find_package(GSL REQUIRED COMPONENTS gsl gslcblas)

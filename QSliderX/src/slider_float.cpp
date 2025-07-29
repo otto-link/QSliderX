@@ -146,7 +146,7 @@ void SliderFloat::mouseMoveEvent(QMouseEvent *event)
     if (this->vmin == -FLT_MAX || this->vmax == FLT_MAX || this->vmin == this->vmax)
       ppu = QSX_CONFIG->slider.ppu;
     else
-      ppu = static_cast<float>(this->rect_bar.width()) / (this->vmax - this->vmin);
+      ppu = SFLOAT(this->rect_bar.width()) / (this->vmax - this->vmin);
 
     if (event->modifiers() & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
@@ -154,7 +154,7 @@ void SliderFloat::mouseMoveEvent(QMouseEvent *event)
       ppu /= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
 
     int   dx = event->position().toPoint().x() - this->pos_x_before_dragging;
-    float dv = static_cast<float>(dx) / ppu;
+    float dv = SFLOAT(dx) / ppu;
     this->set_value(this->value_before_dragging + dv);
   }
 
@@ -235,8 +235,7 @@ void SliderFloat::paintEvent(QPaintEvent *)
       const float r = (this->value - this->vmin) / range;
       if (r > 0.f)
       {
-        const int rcut = static_cast<int>((1.f - r) *
-                                          static_cast<float>(this->rect_bar.width()));
+        const int rcut = SINT((1.f - r) * SFLOAT(this->rect_bar.width()));
 
         painter.setBrush(QSX_CONFIG->global.color_selected);
         painter.setPen(Qt::NoPen);
@@ -347,7 +346,7 @@ void SliderFloat::show_context_menu()
   menu.addSeparator()->setText("History");
 
   // Add history actions
-  for (int i = static_cast<int>(this->history.size()) - 1; i >= 0; --i)
+  for (int i = SINT(this->history.size()) - 1; i >= 0; --i)
   {
     float    v = history[static_cast<size_t>(i)];
     QString  hist_label = QString("Set to %1").arg(v);
@@ -406,7 +405,7 @@ void SliderFloat::update_geometry()
   this->base_dx = fm.horizontalAdvance(QString("M"));
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
 
-  int label_width = fm.horizontalAdvance(this->label.c_str());
+  int label_width = text_width(this, this->label);
   this->slider_width = label_width + QSX_CONFIG->slider.padding_middle +
                        10 * fm.horizontalAdvance(QString("0")) + 6 * this->base_dx;
 

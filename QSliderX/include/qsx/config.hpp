@@ -33,6 +33,12 @@ public:
     size_t max_history = 8;
   } global;
 
+  struct Canvas
+  {
+    int   point_radius = 6;
+    float ppu_multiplier_fine_tuning = 10.f;
+  } canvas;
+
   struct Slider
   {
     int   padding_v = 8;

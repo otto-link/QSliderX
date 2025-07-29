@@ -126,15 +126,15 @@ void SliderRange::mouseMoveEvent(QMouseEvent *event)
   if (this->is_dragging)
   {
     // pixels per unit
-    float ppu = this->vmax != this->vmin ? static_cast<float>(this->rect_bar.width()) /
-                                               (this->vmax - this->vmin)
-                                         : 1.f;
+    float ppu = this->vmax != this->vmin
+                    ? SFLOAT(this->rect_bar.width()) / (this->vmax - this->vmin)
+                    : 1.f;
 
     if (event->modifiers() & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
 
     int   dx = event->position().toPoint().x() - this->pos_x_before_dragging;
-    float dv = static_cast<float>(dx) / ppu;
+    float dv = SFLOAT(dx) / ppu;
     this->set_value(this->dragged_value_id, this->value_before_dragging + dv);
 
     event->accept();
@@ -282,15 +282,15 @@ void SliderRange::paintEvent(QPaintEvent *)
 
       // draw...
       int   nn = this->rect_bar.width(); // one per pixel
-      float dr = 1.f / static_cast<float>(nn - 1);
+      float dr = 1.f / SFLOAT(nn - 1);
       int   p0 = this->rect_handle_min.center().x();
       int   p1 = this->rect_handle_max.center().x();
       int   gap = radius;
 
       for (int k = 0; k < nn - 1; ++k)
       {
-        float r0 = static_cast<float>(k) * dr;
-        float r1 = static_cast<float>(k + 1) * dr;
+        float r0 = SFLOAT(k) * dr;
+        float r1 = SFLOAT(k + 1) * dr;
 
         // value
         float v0 = r0 * (this->vmax - this->vmin) + this->vmin;
@@ -304,14 +304,12 @@ void SliderRange::paintEvent(QPaintEvent *)
         y1 = std::clamp(y1, 0.f, 1.f);
 
         // draw positions (add margin beginning/end)
-        float lx = static_cast<float>(this->rect_bar.width() - 2 * gap);
-        int   pos0 = gap + static_cast<int>(r0 * lx);
-        int   pos1 = gap + static_cast<int>(r1 * lx);
+        float lx = SFLOAT(this->rect_bar.width() - 2 * gap);
+        int   pos0 = gap + SINT(r0 * lx);
+        int   pos1 = gap + SINT(r1 * lx);
 
-        int dy0 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
-                                   (1.f - y0));
-        int dy1 = static_cast<int>(static_cast<float>(this->rect_bar.height()) *
-                                   (1.f - y1));
+        int dy0 = SINT(SFLOAT(this->rect_bar.height()) * (1.f - y0));
+        int dy1 = SINT(SFLOAT(this->rect_bar.height()) * (1.f - y1));
 
         painter.setPen(Qt::NoPen);
         if (pos0 >= p0 && pos1 <= p1)
@@ -527,11 +525,11 @@ void SliderRange::update_geometry()
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
 
   // TODO fix
-  int label_width = 2 * this->base_dx + fm.horizontalAdvance(this->label.c_str());
+  int label_width = 2 * this->base_dx + text_width(this, this->label);
   int buttons_width = 4 * this->base_dx;
 
   this->slider_width = buttons_width + 2 * label_width;
-  this->slider_height = static_cast<int>(2.25f * static_cast<float>(this->base_dy));
+  this->slider_height = SINT(2.25f * SFLOAT(this->base_dy));
 
   // size
   this->setMinimumWidth(this->slider_width);
@@ -539,7 +537,7 @@ void SliderRange::update_geometry()
   this->setMaximumHeight(this->slider_height + this->base_dy);
 
   // rectangles
-  int   base_dx_half = static_cast<int>(0.5f * static_cast<float>(this->base_dx));
+  int   base_dx_half = SINT(0.5f * SFLOAT(this->base_dx));
   QSize bsize = QSize(this->base_dx + base_dx_half, this->base_dy); // buttons size
 
   this->rect_reset_unit = QRect(
@@ -574,8 +572,8 @@ void SliderRange::update_value_positions()
   const float range = this->vmax - this->vmin;
   const float r0 = range ? (this->value0 - this->vmin) / range : 0.f;
   const float r1 = range ? (this->value1 - this->vmin) / range : 1.f;
-  const int   rpos0 = static_cast<int>(r0 * static_cast<float>(this->rect_bar.width()));
-  const int   rpos1 = static_cast<int>(r1 * static_cast<float>(this->rect_bar.width()));
+  const int   rpos0 = SINT(r0 * SFLOAT(this->rect_bar.width()));
+  const int   rpos1 = SINT(r1 * SFLOAT(this->rect_bar.width()));
 
   const int dr = QSX_CONFIG->range.handle_radius;
 

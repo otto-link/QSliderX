@@ -10,6 +10,7 @@
 #include <gsl/gsl_spline.h>
 
 #include "qsx/internal/interpolate1d.hpp"
+#include "qsx/internal/utils.hpp"
 
 namespace qsx
 {
@@ -101,7 +102,7 @@ float Interpolator1D::interpolate(float x) const
   double xd = static_cast<double>(x);
   xd = std::clamp(xd, this->xmin, this->xmax);
   double result = gsl_spline_eval(this->interp, xd, accel_);
-  return static_cast<float>(result);
+  return SFLOAT(result);
 }
 
 } // namespace qsx

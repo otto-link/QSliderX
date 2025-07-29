@@ -3,8 +3,24 @@
  * this software. */
 #include <string>
 
+#include <QFont>
+#include <QWidget>
+
 namespace qsx
 {
+
+void resize_font(QWidget *widget, int relative_size_modification)
+{
+  QFont font = widget->font();
+  font.setPointSize(font.pointSize() + relative_size_modification);
+  widget->setFont(font);
+}
+
+int text_width(QWidget *widget, const std::string &text)
+{
+  QFontMetrics fm(widget->font());
+  return fm.horizontalAdvance(text.c_str());
+}
 
 std::string truncate_string(const std::string &input, size_t max_length)
 {
