@@ -32,6 +32,9 @@ public:
   std::string        get_value_as_string(float v) const;
   void               set_is_dragging(bool new_state);
   void set_points(const std::vector<float> &new_x, const std::vector<float> &new_y);
+  void set_points(const std::vector<float> &new_x,
+                  const std::vector<float> &new_y,
+                  const std::vector<float> &new_z);
   void set_points_x(const std::vector<float> &new_x);
   void set_points_y(const std::vector<float> &new_y);
   void set_points_z(const std::vector<float> &new_z);

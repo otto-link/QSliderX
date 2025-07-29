@@ -363,11 +363,19 @@ void CanvasPoints::set_draw_z_value(bool new_state)
 void CanvasPoints::set_points(const std::vector<float> &new_x,
                               const std::vector<float> &new_y)
 {
-  this->set_points_x(new_x);
-  this->set_points_y(new_y);
-
   std::vector<float> new_z(new_x.size(), 1.f);
-  this->set_points_z(new_z);
+  this->set_points(new_x, new_y, new_z);
+}
+
+void CanvasPoints::set_points(const std::vector<float> &new_x,
+                              const std::vector<float> &new_y,
+                              const std::vector<float> &new_z)
+{
+  this->points_x = new_x;
+  this->points_y = new_y;
+  this->points_z = new_z;
+  this->update();
+  Q_EMIT this->value_changed();
 }
 
 void CanvasPoints::set_points_x(const std::vector<float> &new_x)
@@ -411,8 +419,6 @@ void CanvasPoints::update_geometry()
   QFontMetrics fm(this->font());
   this->base_dx = text_width(this, "M");
   this->base_dy = fm.height() + QSX_CONFIG->slider.padding_v;
-
-  int label_width = 2 * this->base_dx + text_width(this, this->label);
 
   this->canvas_width = 256;
   this->canvas_height = 256;
