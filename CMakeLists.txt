@@ -25,7 +25,7 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 
 # --- copy data
-file(COPY ${CMAKE_SOURCE_DIR}/QSliderX/data/bg.png
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/QSliderX/data/bg.png
      DESTINATION ${EXECUTABLE_OUTPUT_PATH}/.)
 
 # ---  dependencies
