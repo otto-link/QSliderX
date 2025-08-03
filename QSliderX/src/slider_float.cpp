@@ -144,7 +144,7 @@ void SliderFloat::mouseMoveEvent(QMouseEvent *event)
     float ppu;
 
     if (this->vmin == -FLT_MAX || this->vmax == FLT_MAX || this->vmin == this->vmax)
-      ppu = QSX_CONFIG->slider.ppu;
+      ppu = QSX_CONFIG->slider.ppu_f;
     else
       ppu = SFLOAT(this->rect_bar.width()) / (this->vmax - this->vmin);
 

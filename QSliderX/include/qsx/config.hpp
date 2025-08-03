@@ -47,7 +47,8 @@ public:
     int   padding_v = 8;
     int   padding_h = 4;
     int   padding_middle = 8;
-    float ppu = 1.f; // sensitivity, pixels/unit
+    float ppu = 1.f;     // sensitivity, pixels/unit
+    float ppu_f = 100.f; // sensitivity, float
     float ppu_multiplier_fine_tuning = 10.f;
     float button_ticks = 50.f;
   } slider;
