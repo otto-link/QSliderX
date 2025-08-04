@@ -360,7 +360,8 @@ void CanvasField::paintEvent(QPaintEvent *)
     painter.drawEllipse(mouse_pos, this->brush_radius, this->brush_radius);
 
     // labels
-    painter.setPen(QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
+    // painter.setPen(QPen(QSX_CONFIG->global.color_text,
+    // QSX_CONFIG->global.width_border));
     painter.setBrush(Qt::NoBrush);
 
     std::string txt = "";
