@@ -20,8 +20,7 @@ int main(int argc, char *argv[])
 
   QSXLOG->info("Starting test application...");
 
-  QWidget window;
-  window.setStyleSheet("background-color: black;");
+  QWidget      window;
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
   bool show_slider_int = false;

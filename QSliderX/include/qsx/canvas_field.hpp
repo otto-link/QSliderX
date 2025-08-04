@@ -70,7 +70,7 @@ private:
   bool             shift_pressed = false;
   bool             is_drawing = false;
   Qt::MouseButtons drawing_buttons;
-  int              brush_radius = 16;
+  int              brush_radius = 32;
   float            brush_strength = 0.05f;
   QPoint           pos_previous;
 };
