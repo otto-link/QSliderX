@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+#include "qsx/canvas_field.hpp"
 #include "qsx/canvas_points.hpp"
 #include "qsx/internal/logger.hpp"
 #include "qsx/slider_float.hpp"
@@ -26,7 +27,21 @@ int main(int argc, char *argv[])
   bool show_slider_int = false;
   bool show_slider_float = false;
   bool show_slider_range = false;
-  bool show_canvas_points = true;
+  bool show_canvas_points = false;
+  bool show_canvas_field = true;
+
+  if (show_canvas_field) // --- CanvasField
+  {
+    {
+      auto *s = new qsx::CanvasField("Canvas");
+      layout->addWidget(s);
+
+      s->connect(s, &qsx::CanvasField::value_changed, [s]() { QSXLOG->trace("value"); });
+      s->connect(s,
+                 &qsx::CanvasField::edit_ended,
+                 [s]() { QSXLOG->trace("edit ended"); });
+    }
+  }
 
   if (show_canvas_points) // --- CanvasPoints
   {

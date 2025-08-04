@@ -40,6 +40,7 @@ public:
     float ppu_multiplier_fine_tuning = 10.f;
     float wheel_diff = 0.05f;
     float wheel_multiplier_fine_tuning = 10.f;
+    float brush_strength_tick = 0.001f;
   } canvas;
 
   struct Slider
