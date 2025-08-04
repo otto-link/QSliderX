@@ -19,9 +19,8 @@ namespace qsx
 CanvasField::CanvasField(const std::string &label_,
                          int                field_width,
                          int                field_height,
-                         const std::string &value_format_,
                          QWidget           *parent)
-    : QWidget(parent), value_format(value_format_), field(field_width, field_height),
+    : QWidget(parent), field(field_width, field_height),
       field_angle(field_width, field_height)
 {
   QSXLOG->trace("CanvasField::CanvasField");

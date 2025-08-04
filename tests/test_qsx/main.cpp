@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   bool show_slider_int = false;
   bool show_slider_float = false;
   bool show_slider_range = false;
-  bool show_canvas_points = false;
+  bool show_canvas_points = true;
   bool show_canvas_field = true;
 
   if (show_canvas_field) // --- CanvasField

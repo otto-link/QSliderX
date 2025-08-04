@@ -20,7 +20,6 @@ public:
   CanvasField(const std::string &label_ = "",
               int                field_width = 512,
               int                field_height = 256,
-              const std::string &value_format_ = "{:.2f}",
               QWidget           *parent = nullptr);
 
   void               clear();
@@ -58,7 +57,6 @@ private:
   void   update_geometry();
 
   std::string label;
-  std::string value_format;
   FloatField  field = FloatField(0, 0);
   FloatField  field_angle = FloatField(0, 0); // in [0, 1] == [-pi, pi]
   bool        allow_angle_mode = false;
