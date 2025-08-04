@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
       auto *s = new qsx::CanvasField("Canvas");
       layout->addWidget(s);
 
+      s->set_allow_angle_mode(true);
+
       s->connect(s, &qsx::CanvasField::value_changed, [s]() { QSXLOG->trace("value"); });
       s->connect(s,
                  &qsx::CanvasField::edit_ended,

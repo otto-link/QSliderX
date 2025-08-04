@@ -5,6 +5,7 @@
 
 #include <QEvent>
 #include <QHoverEvent>
+#include <QMessageBox>
 #include <QPainter>
 
 #include "qsx/canvas_field.hpp"
@@ -35,7 +36,8 @@ CanvasField::CanvasField(const std::string &label_,
 
   this->setToolTip(
       "Field editor\n- left-click: add\n- right-click substract\n- mousewheel: brush "
-      "radius\n- CTRL + mousewheel: brush strength\n- SHIFT + left-click: smoothing");
+      "radius\n- CTRL + mousewheel: brush strength\n- SHIFT + left-click: smoothing\n- "
+      "TAB: switch to angle mode\n- Key C: clear canvas");
 
   this->update_geometry();
 }
@@ -56,6 +58,7 @@ QColor CanvasField::colormap(float v) const
 void CanvasField::clear()
 {
   this->field.clear();
+  this->field_angle.clear();
   this->update();
   Q_EMIT this->value_changed();
   Q_EMIT this->edit_ended();
@@ -71,39 +74,115 @@ void CanvasField::draw_at(const QPoint &pos, const Qt::MouseButtons &buttons)
 {
   const QPoint center = pos;
   const int    ir = this->brush_radius;
+  const int    navg = QSX_CONFIG->canvas.brush_avg_radius;
   float        sign = (buttons & Qt::LeftButton) ? 1.f : -1.f;
 
-  // TODO angle based on brush gesture
-  float angle = std::atan2(SFLOAT(pos.y() - pos_previous.y()),
-                           SFLOAT(pos.x() - pos_previous.x()));
-  angle = 0.5f * (angle / SFLOAT(M_PI) + 1.f);
-  this->pos_previous = pos;
+  if (this->shift_pressed)
+  {
+    // --- smoothing: compute an averaged value and lerp it based on the kernel value
 
-  // value
-  for (int j = -ir; j <= ir; ++j)
-    for (int i = -ir; i <= ir; ++i)
-    {
-      int fx = center.x() + i;
-      int fy = center.y() + j;
-
-      if (fx < 0 || fy < 0 || fx >= this->field.width || fy >= this->field.height)
-        continue;
-
-      float dist = std::sqrt(SFLOAT(i * i + j * j));
-      bool  inside = (dist <= SFLOAT(ir));
-
-      if (inside)
+    for (int j = -ir; j <= ir; ++j)
+      for (int i = -ir; i <= ir; ++i)
       {
-        // reduce intensity when getting close to value saturation
-        float amp = sign * this->brush_strength;
+        int fx = center.x() + i;
+        int fy = center.y() + j;
 
-        float falloff = 1.f - (dist / SFLOAT(ir)); // TODO kernel
-        falloff = std::clamp(falloff, 0.0f, 1.0f);
+        if (fx < 0 || fy < 0 || fx >= this->field.width || fy >= this->field.height)
+          continue;
 
-        field.at(fx, fy) += amp * falloff;
-        field.at(fx, fy) = std::clamp(this->field.at(fx, fy), 0.0f, 1.0f);
+        float dist = std::sqrt(SFLOAT(i * i + j * j));
+        bool  inside = (dist <= SFLOAT(ir));
+
+        if (inside)
+        {
+          // averaging
+          {
+            float sum = 0.f;
+            int   ns = 0;
+
+            for (int r = -navg; r < navg + 1; r++)
+              for (int s = -navg; s < navg + 1; s++)
+              {
+                if (fx + r < 0 || fy + s < 0 || fx + r >= this->field.width ||
+                    fy + s >= this->field.height)
+                  continue;
+
+                sum += this->field.at(fx + r, fy + s);
+                ns++;
+              }
+
+            float falloff = 1.f - (dist / SFLOAT(ir));
+            float value_avg = std::clamp(sum / SFLOAT(ns), 0.f, 1.f);
+
+            this->field.at(fx, fy) = (1.f - falloff) * this->field.at(fx, fy) +
+                                     falloff * value_avg;
+          }
+
+          // same for angle
+          if (this->allow_angle_mode)
+          {
+            float sum = 0.f;
+            int   ns = 0;
+
+            for (int r = -navg; r < navg + 1; r++)
+              for (int s = -navg; s < navg + 1; s++)
+              {
+                if (fx + r < 0 || fy + s < 0 || fx + r >= this->field_angle.width ||
+                    fy + s >= this->field_angle.height)
+                  continue;
+
+                sum += this->field_angle.at(fx + r, fy + s);
+                ns++;
+              }
+
+            float falloff = 1.f - (dist / SFLOAT(ir));
+            float value_avg = std::clamp(sum / SFLOAT(ns), 0.f, 1.f);
+
+            this->field_angle.at(fx, fy) = (1.f - falloff) *
+                                               this->field_angle.at(fx, fy) +
+                                           falloff * value_avg;
+          }
+        }
       }
-    }
+  }
+  else
+  {
+    // --- regular add/remove value
+
+    float angle = std::atan2(SFLOAT(pos.y() - pos_previous.y()),
+                             SFLOAT(pos.x() - pos_previous.x()));
+    angle = 0.5f * (angle / SFLOAT(M_PI) + 1.f);
+    this->pos_previous = pos;
+
+    // value
+    for (int j = -ir; j <= ir; ++j)
+      for (int i = -ir; i <= ir; ++i)
+      {
+        int fx = center.x() + i;
+        int fy = center.y() + j;
+
+        if (fx < 0 || fy < 0 || fx >= this->field.width || fy >= this->field.height)
+          continue;
+
+        float dist = std::sqrt(SFLOAT(i * i + j * j));
+        bool  inside = (dist <= SFLOAT(ir));
+
+        if (inside)
+        {
+          // reduce intensity when getting close to value saturation
+          float amp = sign * this->brush_strength;
+
+          float falloff = 1.f - (dist / SFLOAT(ir)); // TODO kernel
+          falloff = std::clamp(falloff, 0.0f, 1.0f);
+
+          this->field.at(fx, fy) += amp * falloff;
+          this->field.at(fx, fy) = std::clamp(this->field.at(fx, fy), 0.0f, 1.0f);
+
+          this->field_angle.at(fx, fy) = (1.f - falloff) * this->field_angle.at(fx, fy) +
+                                         falloff * angle;
+        }
+      }
+  }
 
   this->update();
   Q_EMIT this->value_changed();
@@ -142,9 +221,6 @@ bool CanvasField::event(QEvent *event)
 
   case QEvent::HoverMove:
   {
-    // auto  *hover = static_cast<QHoverEvent *>(event);
-    // QPoint mouse_pos = hover->position().toPoint(); // mouse position inside the widget
-
     this->update();
   }
   break;
@@ -173,6 +249,25 @@ void CanvasField::keyPressEvent(QKeyEvent *event)
   {
     this->shift_pressed = true;
     this->update();
+  }
+  else if (event->key() == Qt::Key_Tab && this->allow_angle_mode)
+  {
+    this->angle_mode = !this->angle_mode;
+    this->update();
+  }
+  else if (event->key() == Qt::Key_C)
+  {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this,
+                                  "Clearing the canvas...",
+                                  "Are you sure?",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+      this->clear();
+      this->update();
+    }
   }
 }
 
@@ -240,10 +335,12 @@ void CanvasField::paintEvent(QPaintEvent *)
   {
     QImage image(this->field.width, this->field.height, QImage::Format_RGB32);
 
+    const FloatField &field_to_draw = this->angle_mode ? this->field_angle : this->field;
+
     for (int j = 0; j < this->field.height; ++j)
       for (int i = 0; i < this->field.width; ++i)
       {
-        float  value = std::clamp(this->field.at(i, j), 0.f, 1.f);
+        float  value = std::clamp(field_to_draw.at(i, j), 0.f, 1.f);
         QColor c = this->colormap(value);
         image.setPixel(i, j, c.rgb());
       }
@@ -255,11 +352,17 @@ void CanvasField::paintEvent(QPaintEvent *)
   if (this->is_mouse_cursor_on_img())
   {
     QPen pen;
-    pen.setColor(Qt::green);
-    pen.setWidth(2);
+    pen.setColor(this->angle_mode ? QSX_CONFIG->canvas.brush_angle_mode_color
+                                  : QSX_CONFIG->canvas.brush_color);
+    pen.setWidth(QSX_CONFIG->canvas.brush_width);
+    pen.setStyle(this->shift_pressed ? Qt::DotLine : Qt::SolidLine);
     painter.setPen(pen);
     painter.setBrush(Qt::NoBrush);
     painter.drawEllipse(mouse_pos, this->brush_radius, this->brush_radius);
+
+    // labels
+    painter.setPen(QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
+    painter.setBrush(Qt::NoBrush);
 
     std::string txt = "";
 
@@ -269,12 +372,11 @@ void CanvasField::paintEvent(QPaintEvent *)
       txt = "Smoothing";
 
     if (!txt.empty())
-    {
-      painter.setPen(
-          QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
-      painter.setBrush(Qt::NoBrush);
       painter.drawText(this->rect_img, Qt::AlignLeft | Qt::AlignTop, txt.c_str());
-    }
+
+    // angle
+    if (this->angle_mode)
+      painter.drawText(this->rect_img, Qt::AlignRight | Qt::AlignTop, "ANGLE MODE");
   }
 }
 
@@ -282,6 +384,11 @@ void CanvasField::resizeEvent(QResizeEvent *event)
 {
   this->update_geometry();
   QWidget::resizeEvent(event);
+}
+
+void CanvasField::set_allow_angle_mode(bool new_state)
+{
+  this->allow_angle_mode = new_state;
 }
 
 void CanvasField::set_brush_strength(float new_strength)

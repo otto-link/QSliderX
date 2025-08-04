@@ -35,12 +35,16 @@ public:
 
   struct Canvas
   {
-    int   point_radius = 7;
-    int   value_arc_width = 6;
-    float ppu_multiplier_fine_tuning = 10.f;
-    float wheel_diff = 0.05f;
-    float wheel_multiplier_fine_tuning = 10.f;
-    float brush_strength_tick = 0.001f;
+    int    point_radius = 7;
+    int    value_arc_width = 6;
+    float  ppu_multiplier_fine_tuning = 10.f;
+    float  wheel_diff = 0.05f;
+    float  wheel_multiplier_fine_tuning = 10.f;
+    float  brush_strength_tick = 0.001f;
+    int    brush_avg_radius = 5;
+    QColor brush_color = QColor("#47B36B");
+    QColor brush_angle_mode_color = QColor("#4772B3");
+    int    brush_width = 2;
   } canvas;
 
   struct Slider

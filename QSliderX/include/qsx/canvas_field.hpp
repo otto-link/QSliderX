@@ -28,6 +28,7 @@ public:
   std::vector<float> get_field_angle_data() const;
   int                get_field_height() const;
   int                get_field_width() const;
+  void               set_allow_angle_mode(bool new_state);
   void               set_brush_strength(float new_strength);
   void               set_field_data(const std::vector<float> &new_data);
 
@@ -60,6 +61,7 @@ private:
   std::string value_format;
   FloatField  field = FloatField(0, 0);
   FloatField  field_angle = FloatField(0, 0); // in [0, 1] == [-pi, pi]
+  bool        allow_angle_mode = false;
   //
   int   canvas_width;
   int   canvas_height;
@@ -69,6 +71,7 @@ private:
   bool             ctrl_pressed = false;
   bool             shift_pressed = false;
   bool             is_drawing = false;
+  bool             angle_mode = false;
   Qt::MouseButtons drawing_buttons;
   int              brush_radius = 32;
   float            brush_strength = 0.05f;
