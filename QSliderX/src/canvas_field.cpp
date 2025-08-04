@@ -347,6 +347,16 @@ void CanvasField::paintEvent(QPaintEvent *)
     painter.drawImage(this->rect_img, image);
   }
 
+  // main label
+  {
+    QPen pen;
+    pen.setColor(QSX_CONFIG->canvas.brush_color);
+    painter.setPen(pen);
+    painter.drawText(this->rect_img,
+                     Qt::AlignLeft | Qt::AlignBottom,
+                     this->label.c_str());
+  }
+
   // brush
   if (this->is_mouse_cursor_on_img())
   {
@@ -360,12 +370,7 @@ void CanvasField::paintEvent(QPaintEvent *)
     painter.drawEllipse(mouse_pos, this->brush_radius, this->brush_radius);
 
     // labels
-    // painter.setPen(QPen(QSX_CONFIG->global.color_text,
-    // QSX_CONFIG->global.width_border));
-    painter.setBrush(Qt::NoBrush);
-
     std::string txt = "";
-
     if (this->ctrl_pressed)
       txt = std::format("Strength: {:.3f}", this->brush_strength);
     else if (this->shift_pressed)
