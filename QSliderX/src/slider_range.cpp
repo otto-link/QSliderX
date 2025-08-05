@@ -96,6 +96,7 @@ void SliderRange::force_values(float new_value0, float new_value1)
   bool check_reversed_range = false;
   bool ret = this->set_value(0, new_value0, check_reversed_range);
   ret |= this->set_value(1, new_value1, check_reversed_range);
+  this->update();
 
   if (ret)
     Q_EMIT this->edit_ended();
@@ -245,9 +246,10 @@ void SliderRange::paintEvent(QPaintEvent *)
   // dynamically adjust range
   if (this->autozoom)
   {
-    float range = std::max(0.001f, this->value1 - this->value0);
-    this->vmin = this->value0 - 0.1f * range;
-    this->vmax = this->value1 + 0.1f * range;
+    float gap = std::min(0.5f, std::max(0.005f, this->value1 - this->value0));
+    this->vmin = this->value0 - gap;
+    this->vmax = this->value1 + gap;
+    this->update_value_positions();
   }
 
   QPainter painter(this);
