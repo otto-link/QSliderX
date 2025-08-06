@@ -31,7 +31,7 @@ To build the `QSliderX` library locally, follow the steps below.
 git clone https://github.com/otto-link/QSliderX.git
 ```
 
-### 2. Configure and build with CMake
+### Configure and build with CMake
 
 ```bash
 cd QSliderX
