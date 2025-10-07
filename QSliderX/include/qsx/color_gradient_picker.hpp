@@ -33,6 +33,7 @@ public:
   QLinearGradient get_gradient() const;
   void            set_gradient(const QLinearGradient &gradient);
   void            set_presets(const std::vector<Preset> &new_presets);
+  void            set_stops(const QVector<Stop> &new_stops);
 
   QSize sizeHint() const override;
 

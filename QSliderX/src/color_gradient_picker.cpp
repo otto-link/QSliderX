@@ -190,6 +190,11 @@ void ColorGradientPicker::set_presets(const std::vector<Preset> &new_presets)
   this->presets = new_presets;
 }
 
+void ColorGradientPicker::set_stops(const QVector<Stop> &new_stops)
+{
+  this->stops = new_stops;
+}
+
 void ColorGradientPicker::show_presets_menu()
 {
   if (this->presets.empty())
