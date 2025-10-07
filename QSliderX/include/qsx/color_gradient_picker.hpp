@@ -31,6 +31,7 @@ public:
   explicit ColorGradientPicker(const std::string &label_ = "", QWidget *parent = nullptr);
 
   QLinearGradient get_gradient() const;
+  QVector<Stop>   get_stops() const;
   void            set_gradient(const QLinearGradient &gradient);
   void            set_presets(const std::vector<Preset> &new_presets);
   void            set_stops(const QVector<Stop> &new_stops);

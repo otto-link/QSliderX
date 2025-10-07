@@ -67,6 +67,8 @@ QLinearGradient ColorGradientPicker::get_gradient() const
   return grad;
 }
 
+QVector<Stop> ColorGradientPicker::get_stops() const { return this->stops; }
+
 void ColorGradientPicker::mouseDoubleClickEvent(QMouseEvent *event)
 {
   int index = this->find_stop_at_position(event->pos());
