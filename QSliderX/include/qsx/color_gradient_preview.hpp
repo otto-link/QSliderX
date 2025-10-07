@@ -14,6 +14,7 @@ struct Stop; // forward
 class GradientPreviewWidget : public QWidget
 {
   Q_OBJECT
+
 public:
   GradientPreviewWidget(const QString       &name_,
                         const QVector<Stop> &stops_,
