@@ -29,6 +29,31 @@ ColorGradientPicker::ColorGradientPicker(const std::string &label_, QWidget *par
   this->stops = {{0.0, QColor(0, 0, 0, 255)}, {1.0, QColor(255, 255, 255, 255)}};
 }
 
+void ColorGradientPicker::contextMenuEvent(QContextMenuEvent *event)
+{
+  int index = this->find_stop_at_position(event->pos());
+
+  if (index != -1)
+  {
+    QMenu    menu(this);
+    QAction *remove_action = menu.addAction("Remove Stop");
+    if (menu.exec(event->globalPos()) == remove_action)
+    {
+      if (this->stops.size() > 2)
+      {
+        this->stops.remove(index);
+        this->update_gradient();
+
+        Q_EMIT this->edit_ended();
+      }
+    }
+  }
+  else
+  {
+    this->show_presets_menu();
+  }
+}
+
 void ColorGradientPicker::draw_checkerboard(QPainter &painter, const QRectF &rect) const
 {
   return; // TODO DBG
@@ -77,7 +102,8 @@ void ColorGradientPicker::mouseDoubleClickEvent(QMouseEvent *event)
     QColor new_color = QColorDialog::getColor(this->stops[index].color,
                                               this,
                                               "Select Color",
-                                              QColorDialog::ShowAlphaChannel);
+                                              QColorDialog::ShowAlphaChannel |
+                                                  QColorDialog::DontUseNativeDialog);
     if (new_color.isValid())
     {
       this->stops[index].color = new_color;
@@ -254,31 +280,6 @@ void ColorGradientPicker::update_gradient()
   Q_EMIT this->value_changed();
   Q_EMIT this->gradient_changed(this->get_gradient());
   this->update();
-}
-
-void ColorGradientPicker::contextMenuEvent(QContextMenuEvent *event)
-{
-  int index = this->find_stop_at_position(event->pos());
-
-  if (index != -1)
-  {
-    QMenu    menu(this);
-    QAction *remove_action = menu.addAction("Remove Stop");
-    if (menu.exec(event->globalPos()) == remove_action)
-    {
-      if (this->stops.size() > 2)
-      {
-        this->stops.remove(index);
-        this->update_gradient();
-
-        Q_EMIT this->edit_ended();
-      }
-    }
-  }
-  else
-  {
-    this->show_presets_menu();
-  }
 }
 
 } // namespace qsx
