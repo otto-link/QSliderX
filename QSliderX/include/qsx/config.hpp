@@ -63,6 +63,12 @@ public:
     int handle_radius = 5;
   } range;
 
+  struct ColorPicker
+  {
+    int height_min = 64;
+    int width_min = 256;
+  } color_picker;
+
 private:
   Config(const Config &) = delete;
   Config &operator=(const Config &) = delete;

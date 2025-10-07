@@ -27,7 +27,7 @@ SliderFloat::SliderFloat(const std::string &label_,
       vmax(vmax_), add_plus_minus_buttons(add_plus_minus_buttons_),
       value_format(value_format_)
 {
-  QSXLOG->trace("SliderFloat::SliderFloat");
+  Logger::log()->trace("SliderFloat::SliderFloat");
 
   this->label = truncate_string(label_,
                                 static_cast<size_t>(QSX_CONFIG->global.max_label_len));

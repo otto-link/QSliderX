@@ -23,7 +23,7 @@ CanvasField::CanvasField(const std::string &label_,
     : QWidget(parent), field(field_width, field_height),
       field_angle(field_width, field_height)
 {
-  QSXLOG->trace("CanvasField::CanvasField");
+  Logger::log()->trace("CanvasField::CanvasField");
 
   this->label = truncate_string(label_,
                                 static_cast<size_t>(QSX_CONFIG->global.max_label_len));

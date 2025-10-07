@@ -9,6 +9,7 @@
 
 #include "qsx/canvas_field.hpp"
 #include "qsx/canvas_points.hpp"
+#include "qsx/color_gradient_picker.hpp"
 #include "qsx/internal/logger.hpp"
 #include "qsx/slider_float.hpp"
 #include "qsx/slider_int.hpp"
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
 
-  QSXLOG->info("Starting test application...");
+  qsx::Logger::log()->info("Starting test application...");
 
   QWidget      window;
   QVBoxLayout *layout = new QVBoxLayout(&window);
@@ -26,8 +27,9 @@ int main(int argc, char *argv[])
   bool show_slider_int = false;
   bool show_slider_float = false;
   bool show_slider_range = false;
-  bool show_canvas_points = true;
-  bool show_canvas_field = true;
+  bool show_canvas_points = false;
+  bool show_canvas_field = false;
+  bool show_gradient_color_picker = true;
 
   if (show_canvas_field) // --- CanvasField
   {
@@ -37,10 +39,12 @@ int main(int argc, char *argv[])
 
       s->set_allow_angle_mode(true);
 
-      s->connect(s, &qsx::CanvasField::value_changed, [s]() { QSXLOG->trace("value"); });
+      s->connect(s,
+                 &qsx::CanvasField::value_changed,
+                 [s]() { qsx::Logger::log()->trace("value"); });
       s->connect(s,
                  &qsx::CanvasField::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended"); });
+                 [s]() { qsx::Logger::log()->trace("edit ended"); });
     }
   }
 
@@ -54,11 +58,13 @@ int main(int argc, char *argv[])
       std::vector<float> y = {0.5f, 0.5f, 0.6f};
       s->set_points(x, y);
 
-      s->connect(s, &qsx::CanvasPoints::value_changed, [s]() { QSXLOG->trace("value"); });
+      s->connect(s,
+                 &qsx::CanvasPoints::value_changed,
+                 [s]() { qsx::Logger::log()->trace("value"); });
 
       s->connect(s,
                  &qsx::CanvasPoints::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended"); });
+                 [s]() { qsx::Logger::log()->trace("edit ended"); });
     }
 
     {
@@ -72,11 +78,13 @@ int main(int argc, char *argv[])
       s->set_draw_z_value(false);
       s->set_bg_image(QImage("bg.png"));
 
-      s->connect(s, &qsx::CanvasPoints::value_changed, [s]() { QSXLOG->trace("value"); });
+      s->connect(s,
+                 &qsx::CanvasPoints::value_changed,
+                 [s]() { qsx::Logger::log()->trace("value"); });
 
       s->connect(s,
                  &qsx::CanvasPoints::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended"); });
+                 [s]() { qsx::Logger::log()->trace("edit ended"); });
     }
   }
 
@@ -88,11 +96,11 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderInt::value_changed,
-                 [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("value: {}", s->get_value()); });
 
       s->connect(s,
                  &qsx::SliderInt::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -101,7 +109,7 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderInt::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -110,7 +118,7 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderInt::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -119,7 +127,7 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderInt::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -128,11 +136,12 @@ int main(int argc, char *argv[])
 
       // s->connect(s,
       //            &qsx::SliderInt::value_changed,
-      //            [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+      //            [s]() { qsx::Logger::log()->trace("value: {}", s->get_value()); });
 
       // s->connect(s,
       //            &qsx::SliderInt::edit_ended,
-      //            [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+      //            [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value());
+      //            });
     }
   }
 
@@ -144,11 +153,11 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderFloat::value_changed,
-                 [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("value: {}", s->get_value()); });
 
       s->connect(s,
                  &qsx::SliderFloat::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -157,7 +166,7 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderFloat::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -166,7 +175,7 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderFloat::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -175,7 +184,7 @@ int main(int argc, char *argv[])
 
       s->connect(s,
                  &qsx::SliderFloat::edit_ended,
-                 [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
 
     {
@@ -184,11 +193,12 @@ int main(int argc, char *argv[])
 
       // s->connect(s,
       //            &qsx::SliderFloat::value_changed,
-      //            [s]() { QSXLOG->trace("value: {}", s->get_value()); });
+      //            [s]() { qsx::Logger::log()->trace("value: {}", s->get_value()); });
 
       // s->connect(s,
       //            &qsx::SliderFloat::edit_ended,
-      //            [s]() { QSXLOG->trace("edit ended: {}", s->get_value()); });
+      //            [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value());
+      //            });
     }
   }
 
@@ -198,15 +208,19 @@ int main(int argc, char *argv[])
       auto *r = new qsx::SliderRange("Range", 2.f, 7.f, 0.f, 10.f, "{:.3f}°");
       layout->addWidget(r);
 
-      r->connect(r,
-                 &qsx::SliderRange::value_changed,
-                 [r]()
-                 { QSXLOG->trace("value: {} {}", r->get_value(0), r->get_value(1)); });
+      r->connect(
+          r,
+          &qsx::SliderRange::value_changed,
+          [r]() {
+            qsx::Logger::log()->trace("value: {} {}", r->get_value(0), r->get_value(1));
+          });
 
       r->connect(r,
                  &qsx::SliderRange::edit_ended,
                  [r]() {
-                   QSXLOG->trace("edit ended: {} {}", r->get_value(0), r->get_value(1));
+                   qsx::Logger::log()->trace("edit ended: {} {}",
+                                             r->get_value(0),
+                                             r->get_value(1));
                  });
     }
 
@@ -225,15 +239,19 @@ int main(int argc, char *argv[])
 
       r->set_histogram_fct(lambda);
 
-      r->connect(r,
-                 &qsx::SliderRange::value_changed,
-                 [r]()
-                 { QSXLOG->trace("value: {} {}", r->get_value(0), r->get_value(1)); });
+      r->connect(
+          r,
+          &qsx::SliderRange::value_changed,
+          [r]() {
+            qsx::Logger::log()->trace("value: {} {}", r->get_value(0), r->get_value(1));
+          });
 
       r->connect(r,
                  &qsx::SliderRange::edit_ended,
                  [r]() {
-                   QSXLOG->trace("edit ended: {} {}", r->get_value(0), r->get_value(1));
+                   qsx::Logger::log()->trace("edit ended: {} {}",
+                                             r->get_value(0),
+                                             r->get_value(1));
                  });
     }
 
@@ -253,17 +271,59 @@ int main(int argc, char *argv[])
       r->set_histogram_fct(lambda);
       r->set_autorange(true);
 
-      r->connect(r,
-                 &qsx::SliderRange::value_changed,
-                 [r]()
-                 { QSXLOG->trace("value: {} {}", r->get_value(0), r->get_value(1)); });
+      r->connect(
+          r,
+          &qsx::SliderRange::value_changed,
+          [r]() {
+            qsx::Logger::log()->trace("value: {} {}", r->get_value(0), r->get_value(1));
+          });
 
       r->connect(r,
                  &qsx::SliderRange::edit_ended,
                  [r]() {
-                   QSXLOG->trace("edit ended: {} {}", r->get_value(0), r->get_value(1));
+                   qsx::Logger::log()->trace("edit ended: {} {}",
+                                             r->get_value(0),
+                                             r->get_value(1));
                  });
     }
+  }
+
+  if (show_gradient_color_picker)
+  {
+    auto *r = new qsx::ColorGradientPicker("Color");
+    layout->addWidget(r);
+
+    r->set_presets({
+        {"Black to White", {{0.0, QColor(0, 0, 0)}, {1.0, QColor(255, 255, 255)}}},
+        {"Rainbow",
+         {{0.0, QColor(255, 0, 0)},
+          {0.2, QColor(255, 255, 0)},
+          {0.4, QColor(0, 255, 0)},
+          {0.6, QColor(0, 255, 255)},
+          {0.8, QColor(0, 0, 255)},
+          {1.0, QColor(255, 0, 255)}}},
+        {"Fire",
+         {{0.0, QColor(0, 0, 0)},
+          {0.3, QColor(180, 0, 0)},
+          {0.6, QColor(255, 128, 0)},
+          {1.0, QColor(255, 255, 0)}}},
+        {"Ocean",
+         {{0.0, QColor(0, 32, 64)},
+          {0.5, QColor(0, 128, 255)},
+          {1.0, QColor(192, 255, 255)}}},
+        {"Forest",
+         {{0.0, QColor(32, 64, 0)},
+          {0.5, QColor(64, 128, 64)},
+          {1.0, QColor(192, 255, 192)}}},
+    });
+
+    r->connect(r,
+               &qsx::ColorGradientPicker::gradient_changed,
+               [&](const QLinearGradient &grad)
+               { qsx::Logger::log()->trace("value changed: {}", grad.stops().size()); });
+    r->connect(r,
+               &qsx::ColorGradientPicker::edit_ended,
+               []() { qsx::Logger::log()->trace("edit ended\n"); });
   }
 
   window.show();
