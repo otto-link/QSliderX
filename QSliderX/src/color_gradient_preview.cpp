@@ -23,22 +23,14 @@ void GradientPreviewWidget::mousePressEvent(QMouseEvent *) { Q_EMIT this->clicke
 
 void GradientPreviewWidget::paintEvent(QPaintEvent *)
 {
-  float ratio = 0.2f;
+  float ratio = QSX_CONFIG->color_picker.preview_width_ratio;
 
   QPainter painter(this);
   QRectF   bar_rect(5, 3, ratio * SFLOAT(this->width()), this->height() - 6);
 
-  // // Checkerboard
-  // int    checker_size = 6;
-  // QColor c1(200, 200, 200);
-  // QColor c2(255, 255, 255);
-  // for (int y = 0; y < bar_rect.height(); y += checker_size)
-  //   for (int x = 0; x < bar_rect.width(); x += checker_size)
-  //   {
-  //     painter.fillRect(
-  //         QRectF(bar_rect.left() + x, bar_rect.top() + y, checker_size, checker_size),
-  //         ((x / checker_size + y / checker_size) % 2 == 0) ? c1 : c2);
-  //   }
+  // if hovered
+  if (this->underMouse())
+    painter.fillRect(this->rect(), QSX_CONFIG->global.color_hovered);
 
   // Gradient
   QLinearGradient grad(bar_rect.topLeft(), bar_rect.topRight());
@@ -49,11 +41,6 @@ void GradientPreviewWidget::paintEvent(QPaintEvent *)
   painter.setBrush(grad);
   painter.setPen(Qt::gray);
   painter.drawRect(bar_rect);
-
-  if (this->underMouse())
-  {
-    painter.fillRect(this->rect(), QColor(0, 0, 0, 20));
-  }
 
   // Label
   painter.setPen(Qt::black);

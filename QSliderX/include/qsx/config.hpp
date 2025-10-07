@@ -65,8 +65,9 @@ public:
 
   struct ColorPicker
   {
-    int height_min = 64;
-    int width_min = 256;
+    int   width_min = 256;
+    int   height_min = 64;
+    float preview_width_ratio = 0.3f;
   } color_picker;
 
 private:

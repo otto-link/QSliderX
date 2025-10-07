@@ -218,22 +218,6 @@ void ColorGradientPicker::show_presets_menu()
     menu.addAction(action);
   }
 
-  // for (auto &preset : this->presets)
-  // {
-  //   QAction *action = menu.addAction(preset.name);
-  //   QObject::connect(action,
-  //                    &QAction::triggered,
-  //                    this,
-  //                    [this, &preset]()
-  //                    {
-  //                      this->stops = preset.stops;
-  //                      this->sort_stops();
-  //                      this->update_gradient();
-
-  //                      Q_EMIT this->edit_ended();
-  //                    });
-  // }
-
   menu.exec(QCursor::pos());
 }
 
