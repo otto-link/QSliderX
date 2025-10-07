@@ -43,7 +43,7 @@ void GradientPreviewWidget::paintEvent(QPaintEvent *)
   painter.drawRect(bar_rect);
 
   // Label
-  painter.setPen(Qt::black);
+  painter.setPen(QSX_CONFIG->global.color_text);
   painter.drawText(QRectF(ratio * SFLOAT(this->width()) + 10,
                           0,
                           (1.f - ratio) * SFLOAT(this->width()) - 10,
