@@ -86,6 +86,20 @@ void ColorGradientPicker::mouseDoubleClickEvent(QMouseEvent *event)
       Q_EMIT this->edit_ended();
     }
   }
+  else
+  {
+    QRectF bar_rect = this->rect().adjusted(10, 10, -10, -20);
+    if (bar_rect.contains(event->pos()))
+    {
+      qreal pos = (event->pos().x() - bar_rect.left()) / bar_rect.width();
+      this->stops.push_back({pos, QColor(255, 255, 255, 255)});
+      this->sort_stops();
+      this->selected_stop_index = this->find_stop_at_position(event->pos());
+      this->update_gradient();
+
+      Q_EMIT this->edit_ended();
+    }
+  }
 }
 
 void ColorGradientPicker::mousePressEvent(QMouseEvent *event)
@@ -97,20 +111,6 @@ void ColorGradientPicker::mousePressEvent(QMouseEvent *event)
     {
       this->selected_stop_index = index;
       this->dragging = true;
-    }
-    else
-    {
-      QRectF bar_rect = this->rect().adjusted(10, 10, -10, -20);
-      if (bar_rect.contains(event->pos()))
-      {
-        qreal pos = (event->pos().x() - bar_rect.left()) / bar_rect.width();
-        this->stops.push_back({pos, QColor(255, 255, 255, 255)});
-        this->sort_stops();
-        this->selected_stop_index = this->find_stop_at_position(event->pos());
-        this->update_gradient();
-
-        Q_EMIT this->edit_ended();
-      }
     }
   }
 }
