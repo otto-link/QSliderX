@@ -15,7 +15,7 @@ GradientPreviewWidget::GradientPreviewWidget(const QString       &name_,
                                              QWidget             *parent)
     : QWidget(parent), name(name_), stops(stops_)
 {
-  this->setFixedSize(160, 26);
+  this->setFixedSize(160, 32);
   this->setMouseTracking(true);
 }
 
@@ -23,10 +23,10 @@ void GradientPreviewWidget::mousePressEvent(QMouseEvent *) { Q_EMIT this->clicke
 
 void GradientPreviewWidget::paintEvent(QPaintEvent *)
 {
-  float ratio = QSX_CONFIG->color_picker.preview_width_ratio;
+  // float ratio = QSX_CONFIG->color_picker.preview_width_ratio;
 
   QPainter painter(this);
-  QRectF   bar_rect(5, 3, ratio * SFLOAT(this->width()), this->height() - 6);
+  QRectF   bar_rect(5, 3, this->width() - 10, this->height() - 6);
 
   // if hovered
   if (this->underMouse())
@@ -44,10 +44,7 @@ void GradientPreviewWidget::paintEvent(QPaintEvent *)
 
   // Label
   painter.setPen(QSX_CONFIG->global.color_text);
-  painter.drawText(QRectF(ratio * SFLOAT(this->width()) + 10,
-                          0,
-                          (1.f - ratio) * SFLOAT(this->width()) - 10,
-                          this->height()),
+  painter.drawText(bar_rect.adjusted(5, 0, -5, 0),
                    Qt::AlignLeft | Qt::AlignVCenter,
                    name);
 }
