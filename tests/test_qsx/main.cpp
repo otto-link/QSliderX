@@ -10,6 +10,7 @@
 #include "qsx/canvas_field.hpp"
 #include "qsx/canvas_points.hpp"
 #include "qsx/color_gradient_picker.hpp"
+#include "qsx/color_picker.hpp"
 #include "qsx/internal/logger.hpp"
 #include "qsx/slider_float.hpp"
 #include "qsx/slider_int.hpp"
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
   bool show_slider_range = false;
   bool show_canvas_points = false;
   bool show_canvas_field = false;
+  bool show_color_picker = true;
   bool show_gradient_color_picker = true;
 
   if (show_canvas_field) // --- CanvasField
@@ -286,6 +288,12 @@ int main(int argc, char *argv[])
                                              r->get_value(1));
                  });
     }
+  }
+
+  if (show_color_picker)
+  {
+    auto *r = new qsx::ColorPicker("Color");
+    layout->addWidget(r);
   }
 
   if (show_gradient_color_picker)

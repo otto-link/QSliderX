@@ -180,7 +180,7 @@ void ColorGradientPicker::paintEvent(QPaintEvent *)
 
   painter.setBrush(grad);
   painter.setPen(Qt::gray);
-  painter.drawRoundedRect(bar_rect, 4, 4);
+  painter.drawRoundedRect(bar_rect, QSX_CONFIG->global.radius, QSX_CONFIG->global.radius);
 
   // Draw color stops
   for (int i = 0; i < this->stops.size(); ++i)
