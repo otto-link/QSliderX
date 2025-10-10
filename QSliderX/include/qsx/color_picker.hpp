@@ -24,7 +24,7 @@ signals:
 
 protected:
   void  paintEvent(QPaintEvent *event) override;
-  void  mouseDoubleClickEvent(QMouseEvent *event) override;
+  void  mousePressEvent(QMouseEvent *event) override;
   QSize sizeHint() const override;
 
 private:

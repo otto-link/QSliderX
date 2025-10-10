@@ -7,6 +7,7 @@
 
 #include "qsx/color_picker.hpp"
 #include "qsx/config.hpp"
+#include "qsx/internal/logger.hpp"
 
 namespace qsx
 {
@@ -37,7 +38,7 @@ void ColorPicker::paintEvent(QPaintEvent *)
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing, true);
 
-  QRect rect = this->rect().adjusted(10, 1, -10, -1);
+  QRect rect = this->rect().adjusted(0, 1, 0, -1);
 
   // --- Checkerboard background for alpha visualization ---
   // const int checker_size = 8;
@@ -63,7 +64,11 @@ void ColorPicker::paintEvent(QPaintEvent *)
   painter.drawText(rect_label, Qt::AlignLeft | Qt::AlignVCenter, this->label.c_str());
 }
 
-void ColorPicker::mouseDoubleClickEvent(QMouseEvent *) { this->open_color_dialog(); }
+void ColorPicker::mousePressEvent(QMouseEvent *event)
+{
+  if (event->button() == Qt::LeftButton)
+    this->open_color_dialog();
+}
 
 void ColorPicker::open_color_dialog()
 {
