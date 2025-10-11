@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
   bool show_slider_int = false;
-  bool show_slider_float = false;
+  bool show_slider_float = true;
   bool show_slider_range = false;
   bool show_canvas_points = false;
   bool show_canvas_field = false;
@@ -163,7 +163,13 @@ int main(int argc, char *argv[])
     }
 
     {
-      auto *s = new qsx::SliderFloat("Float", 1e5f, 0, FLT_MAX, true, "{:.3f} K");
+      auto *s = new qsx::SliderFloat(
+          "Float, with a very very long long long long  long long long caption",
+          1e5f,
+          0,
+          FLT_MAX,
+          true,
+          "{:.3f} K");
       layout->addWidget(s);
 
       s->connect(s,

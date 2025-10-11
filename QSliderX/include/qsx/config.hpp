@@ -29,7 +29,7 @@ public:
     float width_hovered = 1.f;
     int   radius = 4;
 
-    int    max_label_len = 16;
+    int    max_label_len = 64;
     size_t max_history = 8;
   } global;
 
