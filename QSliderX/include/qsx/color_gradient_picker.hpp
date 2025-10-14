@@ -38,6 +38,9 @@ public:
 
   QSize sizeHint() const override;
 
+public slots:
+  void show_presets_menu();
+
 signals:
   void value_changed(); // always
   void edit_ended();    // only end of edit
@@ -57,7 +60,6 @@ private:
   QRectF stop_rect(const Stop &stop) const;
   void   sort_stops();
   void   update_gradient();
-  void   show_presets_menu();
 
   // --- Members ---
   std::string         label;
