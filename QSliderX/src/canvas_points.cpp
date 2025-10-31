@@ -26,8 +26,6 @@ CanvasPoints::CanvasPoints(const std::string &label_,
     : QWidget(parent), xmin(xmin_), xmax(xmax_), ymin(ymin_), ymax(ymax_),
       value_format(value_format_)
 {
-  Logger::log()->trace("CanvasPoints::CanvasPoints");
-
   this->label = truncate_string(label_,
                                 static_cast<size_t>(QSX_CONFIG->global.max_label_len));
 

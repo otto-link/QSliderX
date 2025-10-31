@@ -27,8 +27,6 @@ SliderRange::SliderRange(const std::string &label_,
       value0(value0_init_), value1(value1_init_), vmin(vmin_), vmax(vmax_),
       value_format(value_format_)
 {
-  Logger::log()->trace("SliderRange::SliderRange");
-
   this->label = truncate_string(label_,
                                 static_cast<size_t>(QSX_CONFIG->global.max_label_len));
 

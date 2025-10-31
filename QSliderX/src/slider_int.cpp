@@ -27,8 +27,6 @@ SliderInt::SliderInt(const std::string &label_,
       vmax(vmax_), add_plus_minus_buttons(add_plus_minus_buttons_),
       value_format(value_format_)
 {
-  Logger::log()->trace("SliderInt::SliderInt");
-
   this->label = truncate_string(label_,
                                 static_cast<size_t>(QSX_CONFIG->global.max_label_len));
 

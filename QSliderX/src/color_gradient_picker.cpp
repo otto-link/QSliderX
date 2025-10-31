@@ -21,8 +21,6 @@ namespace qsx
 ColorGradientPicker::ColorGradientPicker(const std::string &label_, QWidget *parent)
     : QWidget(parent), label(label_)
 {
-  Logger::log()->trace("ColorGradientPicker::ColorGradientPicker");
-
   this->setMinimumHeight(QSX_CONFIG->color_picker.height_min);
 
   // Default gradient
