@@ -26,13 +26,13 @@ public:
               const std::string &value_format_ = "{:.3f}",
               QWidget           *parent = nullptr);
 
-  void        apply_text_edit_value();
-  float       get_value() const;
-  std::string get_value_as_string() const;
-  void        set_is_dragging(bool new_state);
-  bool        set_value(float new_value);
-  void        show_context_menu();
-  QSize       sizeHint() const;
+  void         apply_text_edit_value();
+  float        get_value() const;
+  std::string  get_value_as_string() const;
+  void         set_is_dragging(bool new_state);
+  virtual bool set_value(float new_value);
+  void         show_context_menu();
+  QSize        sizeHint() const;
 
 signals:
   void value_changed(); // always
@@ -47,7 +47,7 @@ protected:
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
 
-private:
+protected:
   void randomize_value();
   void update_history();
   void update_geometry();

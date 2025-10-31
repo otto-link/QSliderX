@@ -35,7 +35,6 @@ SliderFloat::SliderFloat(const std::string &label_,
   this->setContextMenuPolicy(Qt::CustomContextMenu);
 
   this->update_geometry();
-
   this->connect(this,
                 &SliderFloat::edit_ended,
                 [this]()

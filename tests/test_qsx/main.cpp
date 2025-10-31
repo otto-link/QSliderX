@@ -13,6 +13,7 @@
 #include "qsx/color_picker.hpp"
 #include "qsx/internal/logger.hpp"
 #include "qsx/slider_float.hpp"
+#include "qsx/slider_float_log.hpp"
 #include "qsx/slider_int.hpp"
 #include "qsx/slider_range.hpp"
 
@@ -26,7 +27,8 @@ int main(int argc, char *argv[])
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
   bool show_slider_int = false;
-  bool show_slider_float = true;
+  bool show_slider_float = false;
+  bool show_slider_float_log = true;
   bool show_slider_range = false;
   bool show_canvas_points = false;
   bool show_canvas_field = false;
@@ -207,6 +209,35 @@ int main(int argc, char *argv[])
       //            &qsx::SliderFloat::edit_ended,
       //            [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value());
       //            });
+    }
+  }
+
+  if (show_slider_float_log) // --- SliderFloatLog
+  {
+    {
+      auto *s = new qsx::SliderFloatLog("Log Float", 3, 1e-5f, 1e5f);
+      layout->addWidget(s);
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_changed,
+                 [s]() { qsx::Logger::log()->trace("value: {}", s->get_value()); });
+
+      s->connect(s,
+                 &qsx::SliderFloat::edit_ended,
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
+    }
+
+    {
+      auto *s = new qsx::SliderFloatLog("Log Float", 3, 1e-5f, FLT_MAX);
+      layout->addWidget(s);
+
+      s->connect(s,
+                 &qsx::SliderFloat::value_changed,
+                 [s]() { qsx::Logger::log()->trace("value: {}", s->get_value()); });
+
+      s->connect(s,
+                 &qsx::SliderFloat::edit_ended,
+                 [s]() { qsx::Logger::log()->trace("edit ended: {}", s->get_value()); });
     }
   }
 
