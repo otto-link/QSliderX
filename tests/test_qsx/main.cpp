@@ -12,6 +12,7 @@
 #include "qsx/color_gradient_picker.hpp"
 #include "qsx/color_picker.hpp"
 #include "qsx/internal/logger.hpp"
+#include "qsx/point2d_selector.hpp"
 #include "qsx/slider_float.hpp"
 #include "qsx/slider_float_log.hpp"
 #include "qsx/slider_int.hpp"
@@ -28,9 +29,10 @@ int main(int argc, char *argv[])
 
   bool show_slider_int = false;
   bool show_slider_float = false;
-  bool show_slider_float_log = true;
+  bool show_slider_float_log = false;
   bool show_slider_range = false;
-  bool show_canvas_points = false;
+  bool show_point2d_selector = true;
+  bool show_canvas_points = true;
   bool show_canvas_field = false;
   bool show_color_picker = true;
   bool show_gradient_color_picker = true;
@@ -325,6 +327,30 @@ int main(int argc, char *argv[])
                                              r->get_value(1));
                  });
     }
+  }
+
+  if (show_point2d_selector)
+  {
+    auto *r = new qsx::Point2DSelector("Test", -1.f, 1.f, -0.5f, 1.f);
+    layout->addWidget(r);
+
+    r->connect(r,
+               &qsx::Point2DSelector::value_changed,
+               [r]()
+               {
+                 qsx::Logger::log()->trace("value: {} {}",
+                                           r->get_value().first,
+                                           r->get_value().second);
+               });
+
+    r->connect(r,
+               &qsx::Point2DSelector::edit_ended,
+               [r]()
+               {
+                 qsx::Logger::log()->trace("edit ended: {} {}",
+                                           r->get_value().first,
+                                           r->get_value().second);
+               });
   }
 
   if (show_color_picker)

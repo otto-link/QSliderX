@@ -28,6 +28,7 @@ public:
     float width_border = 1.f;
     float width_hovered = 1.f;
     int   radius = 4;
+    int   padding = 4;
 
     int    max_label_len = 64;
     size_t max_history = 8;
@@ -69,6 +70,12 @@ public:
     int   height_min = 64;
     float preview_width_ratio = 0.3f;
   } color_picker;
+
+  struct Point2D
+  {
+    int  width_hint = 128;
+    bool show_value = true;
+  } point2d;
 
 private:
   Config(const Config &) = delete;
