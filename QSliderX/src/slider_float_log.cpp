@@ -33,8 +33,8 @@ SliderFloatLog::SliderFloatLog(const std::string &label_,
   if (vmin_ <= 0.f || vmax_ <= 0.f)
     throw std::runtime_error("SliderFloatLog requires positive min and max values.");
 
-  log_min = std::log10(vmin_);
-  log_max = std::log10(vmax_);
+  this->log_min = std::log10(vmin_);
+  this->log_max = std::log10(vmax_);
 }
 
 float SliderFloatLog::from_log(float lv) const { return std::pow(10.f, lv); }
@@ -43,7 +43,7 @@ void SliderFloatLog::mouseMoveEvent(QMouseEvent *event)
 {
   if (this->is_dragging)
   {
-    float ppu = SFLOAT(this->rect_bar.width()) / (log_max - log_min);
+    float ppu = SFLOAT(this->rect_bar.width()) / (this->log_max - this->log_min);
 
     if (event->modifiers() & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
@@ -54,7 +54,7 @@ void SliderFloatLog::mouseMoveEvent(QMouseEvent *event)
     float dlogv = SFLOAT(dx) / ppu;
 
     float current_log = to_log(this->value_before_dragging);
-    float new_log = std::clamp(current_log + dlogv, log_min, log_max);
+    float new_log = std::clamp(current_log + dlogv, this->log_min, this->log_max);
 
     this->set_value(from_log(new_log));
   }
@@ -67,9 +67,9 @@ void SliderFloatLog::mousePressEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton)
   {
     bool  is_range_limited = this->vmin != -FLT_MAX && this->vmax != FLT_MAX;
-    float delta_log = is_range_limited
-                          ? (log_max - log_min) / QSX_CONFIG->slider.button_ticks
-                          : 0.1f;
+    float delta_log = is_range_limited ? (this->log_max - this->log_min) /
+                                             QSX_CONFIG->slider.button_ticks
+                                       : 0.1f;
 
     if (this->is_bar_hovered)
     {
@@ -115,8 +115,8 @@ void SliderFloatLog::paintEvent(QPaintEvent *event)
   // value bar (logarithmic position)
   if (this->vmin != -FLT_MAX && this->vmax != FLT_MAX && !this->value_edit->isVisible())
   {
-    const float range = log_max - log_min;
-    const float r = (to_log(this->value) - log_min) / range;
+    const float range = this->log_max - this->log_min;
+    const float r = (to_log(this->value) - this->log_min) / range;
 
     if (r > 0.f)
     {
