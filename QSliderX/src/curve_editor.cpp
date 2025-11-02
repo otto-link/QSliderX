@@ -334,9 +334,9 @@ QPointF CurveEditor::screen_to_point(const QPoint &p) const
 void CurveEditor::set_sample_count(int new_sample_count)
 {
   this->sample_count = new_sample_count;
+  this->update_values();
   this->update();
 
-  Q_EMIT this->value_changed();
   Q_EMIT this->edit_ended();
 }
 
