@@ -19,14 +19,13 @@ CurveEditor::CurveEditor(const std::string &label_, int sample_count_, QWidget *
   this->setMouseTracking(true);
   this->setAttribute(Qt::WA_Hover);
 
-  // Default curve: linear from (0,0) to (1,1)
-  this->control_points = {{0.f, 0.f}, {1.f, 1.f}};
-  this->update_values();
+  this->clear_points();
 }
 
 void CurveEditor::clear_points()
 {
   this->control_points.clear();
+  this->control_points = {{0.f, 0.f}, {1.f, 1.f}};
   this->update_values();
 }
 
