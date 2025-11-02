@@ -136,6 +136,8 @@ int CurveEditor::find_nearest_point(const QPoint &pos) const
   return -1;
 }
 
+bool CurveEditor::get_smooth_interpolation() const { return this->smooth_interpolation; }
+
 std::vector<float> CurveEditor::get_values() const { return this->values; }
 
 float CurveEditor::interpolate(float t) const
@@ -333,6 +335,13 @@ void CurveEditor::set_sample_count(int new_sample_count)
   this->update();
 
   Q_EMIT this->value_changed();
+  Q_EMIT this->edit_ended();
+}
+
+void CurveEditor::set_smooth_interpolation(bool new_state)
+{
+  this->smooth_interpolation = new_state;
+  this->update_values();
   Q_EMIT this->edit_ended();
 }
 

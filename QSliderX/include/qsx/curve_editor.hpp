@@ -23,9 +23,11 @@ public:
                        QWidget           *parent = nullptr);
 
   void               clear_points();
+  bool               get_smooth_interpolation() const;
   std::vector<float> get_values() const;
   void               set_values(const std::vector<float> &new_values);
   void               set_sample_count(int new_sample_count);
+  void               set_smooth_interpolation(bool new_state);
 
   QSize sizeHint() const override;
 
