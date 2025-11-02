@@ -354,7 +354,7 @@ void CurveEditor::set_values(const std::vector<float> &new_values)
 {
   this->values = new_values;
   this->sample_count = SINT(this->values.size());
-  this->update();
+  this->update_values();
 }
 
 QSize CurveEditor::sizeHint() const
