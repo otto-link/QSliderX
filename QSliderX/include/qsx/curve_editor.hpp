@@ -18,7 +18,9 @@ class CurveEditor : public QWidget
   Q_OBJECT
 
 public:
-  explicit CurveEditor(int sample_count_ = 8, QWidget *parent = nullptr);
+  explicit CurveEditor(const std::string &label_ = "",
+                       int                sample_count_ = 8,
+                       QWidget           *parent = nullptr);
 
   void               clear_points();
   std::vector<float> get_values() const;
@@ -50,6 +52,7 @@ private:
   QPointF screen_to_point(const QPoint &p) const;
   void    update_values();
 
+  std::string          label;
   std::vector<QPointF> control_points;
   std::vector<float>   values;
   int                  sample_count;

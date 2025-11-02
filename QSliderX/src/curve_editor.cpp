@@ -13,10 +13,9 @@
 namespace qsx
 {
 
-CurveEditor::CurveEditor(int sample_count_, QWidget *parent)
-    : QWidget(parent), sample_count(sample_count_)
+CurveEditor::CurveEditor(const std::string &label_, int sample_count_, QWidget *parent)
+    : QWidget(parent), label(label_), sample_count(sample_count_)
 {
-  this->setMinimumSize(200, 100);
   this->setMouseTracking(true);
   this->setAttribute(Qt::WA_Hover);
 
@@ -288,6 +287,22 @@ void CurveEditor::paintEvent(QPaintEvent *)
   painter.setRenderHint(QPainter::Antialiasing, true);
 
   this->draw_background(painter);
+
+  // label
+  if (!this->label.empty())
+  {
+    QFontMetrics fm(this->font());
+    int          base_dx = text_width(this, "M");
+    int          base_dy = fm.height() + 2 * QSX_CONFIG->global.padding;
+
+    QRect rect_label = QRect(QPoint(base_dx, 0),
+                             QSize(this->rect().width() - base_dx, base_dy));
+
+    painter.setBrush(QBrush(QSX_CONFIG->global.color_text));
+    painter.setPen(QPen(QSX_CONFIG->global.color_text));
+    painter.drawText(rect_label, Qt::AlignLeft | Qt::AlignVCenter, this->label.c_str());
+  }
+
   this->draw_curve(painter);
   this->draw_points(painter);
 }

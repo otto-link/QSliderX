@@ -357,7 +357,7 @@ int main(int argc, char *argv[])
 
   if (show_curve_editor)
   {
-    auto *r = new qsx::CurveEditor();
+    auto *r = new qsx::CurveEditor("Curve");
     layout->addWidget(r);
 
     r->connect(r,
