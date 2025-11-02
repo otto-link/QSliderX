@@ -255,7 +255,7 @@ void ColorGradientPicker::show_presets_menu()
 
 QSize ColorGradientPicker::sizeHint() const
 {
-  return QSize(QSX_CONFIG->color_picker.width_min, QSX_CONFIG->color_picker.height_min);
+  return QSize(QSX_CONFIG->global.width_min, QSX_CONFIG->color_picker.height_min);
 }
 
 void ColorGradientPicker::sort_stops()

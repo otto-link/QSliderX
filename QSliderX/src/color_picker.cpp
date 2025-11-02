@@ -82,6 +82,6 @@ void ColorPicker::open_color_dialog()
     this->set_color(new_color);
 }
 
-QSize ColorPicker::sizeHint() const { return QSize(120, 24); }
+QSize ColorPicker::sizeHint() const { return QSize(QSX_CONFIG->global.width_min, 24); }
 
 } // namespace qsx

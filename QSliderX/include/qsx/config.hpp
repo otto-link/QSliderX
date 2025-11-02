@@ -32,6 +32,7 @@ public:
 
     int    max_label_len = 64;
     size_t max_history = 8;
+    int    width_min = 256;
   } global;
 
   struct Canvas
@@ -66,16 +67,20 @@ public:
 
   struct ColorPicker
   {
-    int   width_min = 256;
     int   height_min = 64;
     float preview_width_ratio = 0.3f;
   } color_picker;
 
   struct Point2D
   {
-    int  width_hint = 128;
     bool show_value = true;
   } point2d;
+
+  struct Curve
+  {
+    bool draw_sampling_points = true;
+    int  sampling_point_radius = 1;
+  } curve;
 
 private:
   Config(const Config &) = delete;

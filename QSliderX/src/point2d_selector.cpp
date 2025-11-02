@@ -56,7 +56,7 @@ bool Point2DSelector::event(QEvent *event)
     {
       int     radius = QSX_CONFIG->canvas.point_radius;
       QPointF pos = this->map_to_widget(this->value);
-      QRect   prect = QRect(QPoint(pos.x(), pos.y()) - QPoint(radius, radius),
+      QRect   prect = QRect(QPoint(SINT(pos.x()), SINT(pos.y())) - QPoint(radius, radius),
                           QSize(2 * radius, 2 * radius));
 
       this->is_point_hovered = prect.contains(mouse_pos);
@@ -77,18 +77,20 @@ std::pair<float, float> Point2DSelector::get_value() const { return this->value;
 
 QPointF Point2DSelector::map_to_widget(const std::pair<float, float> &v) const
 {
-  QRectF area = this->rect().adjusted(5, 5, -5, -5);
-  float  nx = (v.first - this->xmin) / (this->xmax - this->xmin);
-  float  ny = (v.second - this->ymin) / (this->ymax - this->ymin);
+  const int padding = QSX_CONFIG->global.padding;
+  QRectF    area = this->rect().adjusted(padding, padding, -padding, -padding);
+  float     nx = (v.first - this->xmin) / (this->xmax - this->xmin);
+  float     ny = (v.second - this->ymin) / (this->ymax - this->ymin);
   return QPointF(area.left() + nx * area.width(),
                  area.bottom() - ny * area.height()); // invert Y
 }
 
 std::pair<float, float> Point2DSelector::map_from_widget(const QPoint &p) const
 {
-  QRectF area = this->rect().adjusted(5, 5, -5, -5);
-  float  nx = (p.x() - area.left()) / area.width();
-  float  ny = 1.0f - (p.y() - area.top()) / area.height();
+  const int padding = QSX_CONFIG->global.padding;
+  QRectF    area = this->rect().adjusted(padding, padding, -padding, -padding);
+  float     nx = SFLOAT((p.x() - area.left()) / area.width());
+  float     ny = SFLOAT(1.0f - (p.y() - area.top()) / area.height());
   return {this->xmin + nx * (this->xmax - this->xmin),
           this->ymin + ny * (this->ymax - this->ymin)};
 }
@@ -105,8 +107,9 @@ void Point2DSelector::mouseMoveEvent(QMouseEvent *event)
   if (!this->is_dragging)
     return;
 
-  QRectF area = this->rect().adjusted(5, 5, -5, -5);
-  QPoint clamped(std::clamp(event->pos().x(),
+  const int padding = QSX_CONFIG->global.padding;
+  QRectF    area = this->rect().adjusted(padding, padding, -padding, -padding);
+  QPoint    clamped(std::clamp(event->pos().x(),
                             static_cast<int>(area.left()),
                             static_cast<int>(area.right())),
                  std::clamp(event->pos().y(),
@@ -155,7 +158,6 @@ void Point2DSelector::paintEvent(QPaintEvent *)
 
     QFontMetrics fm(this->font());
     int          base_dx = text_width(this, "M");
-    int          base_dy = fm.height() + 2 * QSX_CONFIG->global.padding;
 
     QRect rect_label = QRect(
         QPoint(base_dx, 0),
@@ -192,13 +194,13 @@ void Point2DSelector::paintEvent(QPaintEvent *)
   if (this->xmin < 0 && this->xmax > 0)
   {
     float nx = (0.0f - this->xmin) / (this->xmax - this->xmin);
-    float x = area.left() + nx * area.width();
+    float x = SFLOAT(area.left() + nx * area.width());
     painter.drawLine(QPointF(x, area.top()), QPointF(x, area.bottom()));
   }
   if (this->ymin < 0 && this->ymax > 0)
   {
     float ny = (0.0f - this->ymin) / (this->ymax - this->ymin);
-    float y = area.bottom() - ny * area.height();
+    float y = SFLOAT(area.bottom() - ny * area.height());
     painter.drawLine(QPointF(area.left(), y), QPointF(area.right(), y));
   }
 
@@ -223,7 +225,8 @@ void Point2DSelector::set_value(const std::pair<float, float> &v)
 
 QSize Point2DSelector::sizeHint() const
 {
-  return {QSX_CONFIG->point2d.width_hint, QSX_CONFIG->point2d.width_hint};
+  return {QSX_CONFIG->global.width_min,
+          SINT(0.5f * SFLOAT(QSX_CONFIG->global.width_min))};
 }
 
 } // namespace qsx
