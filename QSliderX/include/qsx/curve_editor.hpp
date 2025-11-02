@@ -23,6 +23,7 @@ public:
                        QWidget           *parent = nullptr);
 
   void               clear_points();
+  int                get_sample_count() const;
   bool               get_smooth_interpolation() const;
   std::vector<float> get_values() const;
   void               set_values(const std::vector<float> &new_values);

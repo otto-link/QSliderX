@@ -136,6 +136,8 @@ int CurveEditor::find_nearest_point(const QPoint &pos) const
   return -1;
 }
 
+int CurveEditor::get_sample_count() const { return SINT(this->control_points.size()); }
+
 bool CurveEditor::get_smooth_interpolation() const { return this->smooth_interpolation; }
 
 std::vector<float> CurveEditor::get_values() const { return this->values; }
