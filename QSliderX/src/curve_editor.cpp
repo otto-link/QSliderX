@@ -8,6 +8,7 @@
 
 #include "qsx/config.hpp"
 #include "qsx/curve_editor.hpp"
+#include "qsx/internal/logger.hpp"
 #include "qsx/internal/utils.hpp"
 
 namespace qsx
@@ -59,9 +60,10 @@ void CurveEditor::draw_curve(QPainter &painter)
   QPointF      p0 = this->point_to_screen(this->control_points.front());
   path.moveTo(p0);
 
-  // simple Catmull-Rom spline interpolation
-  for (float t = 0.0f; t <= 1.0f; t += 1.0f / SFLOAT(this->sample_count))
+  // lines
+  for (int k = 1; k < this->sample_count; ++k)
   {
+    float   t = SFLOAT(k) / SFLOAT(this->sample_count - 1);
     float   y = this->interpolate(t);
     QPointF p = this->point_to_screen(QPointF(t, y));
     path.lineTo(p);
@@ -73,8 +75,9 @@ void CurveEditor::draw_curve(QPainter &painter)
   {
     painter.setBrush(QBrush(QSX_CONFIG->global.color_border));
 
-    for (float t = 0.0f; t <= 1.0f; t += 1.0f / SFLOAT(this->sample_count))
+    for (int k = 0; k < this->sample_count; ++k)
     {
+      float   t = SFLOAT(k) / SFLOAT(this->sample_count - 1);
       float   y = this->interpolate(t);
       QPointF p = this->point_to_screen(QPointF(t, y));
       painter.drawEllipse(p,
@@ -136,7 +139,7 @@ int CurveEditor::find_nearest_point(const QPoint &pos) const
   return -1;
 }
 
-int CurveEditor::get_sample_count() const { return SINT(this->control_points.size()); }
+int CurveEditor::get_sample_count() const { return SINT(this->values.size()); }
 
 bool CurveEditor::get_smooth_interpolation() const { return this->smooth_interpolation; }
 
