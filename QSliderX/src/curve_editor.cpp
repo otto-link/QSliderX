@@ -334,6 +334,15 @@ QPointF CurveEditor::screen_to_point(const QPoint &p) const
                  std::clamp(1.f - SFLOAT(p.y() - padding) / hf, 0.f, 1.f));
 }
 
+void CurveEditor::set_control_points(const std::vector<QPointF> &new_control_points)
+{
+  this->control_points = new_control_points;
+  this->update_values();
+  this->update();
+
+  Q_EMIT this->edit_ended();
+}
+
 void CurveEditor::set_sample_count(int new_sample_count)
 {
   this->sample_count = new_sample_count;
@@ -348,13 +357,6 @@ void CurveEditor::set_smooth_interpolation(bool new_state)
   this->smooth_interpolation = new_state;
   this->update_values();
   Q_EMIT this->edit_ended();
-}
-
-void CurveEditor::set_values(const std::vector<float> &new_values)
-{
-  this->values = new_values;
-  this->sample_count = SINT(this->values.size());
-  this->update_values();
 }
 
 QSize CurveEditor::sizeHint() const

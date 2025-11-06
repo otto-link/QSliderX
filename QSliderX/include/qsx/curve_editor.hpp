@@ -26,7 +26,7 @@ public:
   int                get_sample_count() const;
   bool               get_smooth_interpolation() const;
   std::vector<float> get_values() const;
-  void               set_values(const std::vector<float> &new_values);
+  void               set_control_points(const std::vector<QPointF> &new_control_points);
   void               set_sample_count(int new_sample_count);
   void               set_smooth_interpolation(bool new_state);
 
