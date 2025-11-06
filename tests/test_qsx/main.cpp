@@ -18,6 +18,7 @@
 #include "qsx/slider_float_log.hpp"
 #include "qsx/slider_int.hpp"
 #include "qsx/slider_range.hpp"
+#include "qsx/vector_editor.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -32,8 +33,9 @@ int main(int argc, char *argv[])
   bool show_slider_float = false;
   bool show_slider_float_log = false;
   bool show_slider_range = false;
-  bool show_point2d_selector = true;
-  bool show_curve_editor = true;
+  bool show_point2d_selector = false;
+  bool show_vector_editor = true;
+  bool show_curve_editor = false;
   bool show_canvas_points = false;
   bool show_canvas_field = false;
   bool show_color_picker = false;
@@ -370,6 +372,30 @@ int main(int argc, char *argv[])
 
     r->connect(r,
                &qsx::CurveEditor::edit_ended,
+               [r]()
+               {
+                 for (auto &v : r->get_values())
+                   qsx::Logger::log()->trace("-- edit ended: {}", v);
+               });
+  }
+
+  if (show_vector_editor)
+  {
+    std::vector<float> vec = {0.f, 0.5, 1.f};
+
+    auto *r = new qsx::VectorEditor("Curve", vec);
+    layout->addWidget(r);
+
+    r->connect(r,
+               &qsx::VectorEditor::value_changed,
+               [r]()
+               {
+                 for (auto &v : r->get_values())
+                   qsx::Logger::log()->trace("value: {}", v);
+               });
+
+    r->connect(r,
+               &qsx::VectorEditor::edit_ended,
                [r]()
                {
                  for (auto &v : r->get_values())
