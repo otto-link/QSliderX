@@ -132,7 +132,7 @@ void SliderRange::mouseMoveEvent(QMouseEvent *event)
     Qt::KeyboardModifiers mods = event->modifiers();
     this->force_edit_ended_emit = false;
 
-    if ((mods & Qt::ControlModifier) && (mods & Qt::AltModifier))
+    if ((mods & Qt::ControlModifier) && (mods & Qt::ShiftModifier))
       this->force_edit_ended_emit = true;
     else if (mods & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
