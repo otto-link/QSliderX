@@ -106,6 +106,7 @@ private:
   bool  is_autozoom_hovered = false;
   bool  is_center_hovered = false;
   bool  is_dragging = false;
+  bool  force_edit_ended_emit = false;
   int   dragged_value_id; // min or max
   float value_before_dragging;
   int   pos_x_before_dragging;

@@ -73,6 +73,7 @@ protected:
   bool              is_plus_hovered = false;
   bool              is_bar_hovered = false;
   bool              is_dragging = false;
+  bool              force_edit_ended_emit = false;
   float             value_before_dragging;
   int               pos_x_before_dragging;
   std::deque<float> history;

@@ -29,12 +29,12 @@ int main(int argc, char *argv[])
   QWidget      window;
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
-  bool show_slider_int = false;
-  bool show_slider_float = false;
+  bool show_slider_int = true;
+  bool show_slider_float = true;
   bool show_slider_float_log = false;
-  bool show_slider_range = false;
+  bool show_slider_range = true;
   bool show_point2d_selector = false;
-  bool show_vector_editor = true;
+  bool show_vector_editor = false;
   bool show_curve_editor = false;
   bool show_canvas_points = false;
   bool show_canvas_field = false;

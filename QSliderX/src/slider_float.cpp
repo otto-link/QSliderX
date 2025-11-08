@@ -4,6 +4,7 @@
 #include <format>
 #include <random>
 
+#include <QApplication>
 #include <QHoverEvent>
 #include <QMenu>
 #include <QPainter>
@@ -145,9 +146,14 @@ void SliderFloat::mouseMoveEvent(QMouseEvent *event)
     else
       ppu = SFLOAT(this->rect_bar.width()) / (this->vmax - this->vmin);
 
-    if (event->modifiers() & Qt::ControlModifier)
+    Qt::KeyboardModifiers mods = event->modifiers();
+    this->force_edit_ended_emit = false;
+
+    if ((mods & Qt::ControlModifier) && (mods & Qt::AltModifier))
+      this->force_edit_ended_emit = true;
+    else if (mods & Qt::ControlModifier)
       ppu *= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
-    else if (event->modifiers() & Qt::ShiftModifier)
+    else if (mods & Qt::ShiftModifier)
       ppu /= QSX_CONFIG->slider.ppu_multiplier_fine_tuning;
 
     int   dx = event->position().toPoint().x() - this->pos_x_before_dragging;
@@ -324,6 +330,9 @@ bool SliderFloat::set_value(float new_value)
     this->value = new_value;
     this->update();
     Q_EMIT this->value_changed();
+
+    if (this->force_edit_ended_emit)
+      Q_EMIT this->edit_ended();
   }
 
   return true;
