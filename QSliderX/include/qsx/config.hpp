@@ -47,6 +47,7 @@ public:
     QColor brush_color = QColor("#47B36B");
     QColor brush_angle_mode_color = QColor("#4772B3");
     int    brush_width = 2;
+    bool   show_help_overlay = true;
   } canvas;
 
   struct Slider

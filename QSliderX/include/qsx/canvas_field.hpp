@@ -59,6 +59,7 @@ private:
   FloatField  field = FloatField(0, 0);
   FloatField  field_angle = FloatField(0, 0); // in [0, 1] == [-pi, pi]
   bool        allow_angle_mode = false;
+  std::string help_msg;
   //
   int   canvas_width;
   int   canvas_height;

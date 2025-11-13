@@ -31,10 +31,11 @@ CanvasField::CanvasField(const std::string &label_,
   this->setAttribute(Qt::WA_Hover);
   this->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  this->setToolTip(
-      "Field editor\n- left-click: add\n- right-click substract\n- mousewheel: brush "
-      "radius\n- CTRL + mousewheel: brush strength\n- SHIFT + left-click: smoothing\n- "
-      "TAB: switch to angle mode\n- Key C: clear canvas");
+  this->help_msg = "Field editor\n- left-click: add\n- right-click substract\n- "
+                   "mousewheel: brush radius\n- CTRL + mousewheel: brush strength\n- "
+                   "SHIFT + left-click: smoothing\n- TAB: switch to angle mode\n- Key C: "
+                   "clear canvas";
+  this->setToolTip(this->help_msg.c_str());
 
   this->update_geometry();
 }
@@ -385,6 +386,22 @@ void CanvasField::paintEvent(QPaintEvent *)
     // angle
     if (this->angle_mode)
       painter.drawText(this->rect_img, Qt::AlignRight | Qt::AlignTop, "ANGLE MODE");
+  }
+
+  // help overlay
+  if (QSX_CONFIG->canvas.show_help_overlay)
+  {
+    QPen pen;
+    pen.setColor(QSX_CONFIG->global.color_faded);
+    painter.setPen(pen);
+
+    QFont font = painter.font();
+    font.setPixelSize(10);
+    painter.setFont(font);
+
+    painter.drawText(this->rect_img,
+                     Qt::AlignLeft | Qt::AlignTop,
+                     this->help_msg.c_str());
   }
 }
 
