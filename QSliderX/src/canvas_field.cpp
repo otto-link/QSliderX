@@ -200,6 +200,11 @@ bool CanvasField::event(QEvent *event)
 {
   switch (event->type())
   {
+  case QEvent::Enter:
+    // ensure keyboard bindings will work
+    this->setFocus(Qt::MouseFocusReason);
+    break;
+
   case QEvent::HoverEnter:
   {
     this->is_hovered = true;
