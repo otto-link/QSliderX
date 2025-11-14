@@ -181,11 +181,70 @@ void CanvasField::draw_at(const QPoint &pos, const Qt::MouseButtons &buttons)
   Q_EMIT this->value_changed();
 }
 
-std::vector<float> CanvasField::get_field_data() const { return this->field.data; }
+std::vector<float> CanvasField::get_field_data() const
+{
+  bool flip_i = QSX_CONFIG->canvas.flip_i;
+  bool flip_j = QSX_CONFIG->canvas.flip_j;
+
+  size_t w = this->field.width;
+  size_t h = this->field.height;
+
+  if (!flip_i && !flip_j)
+  {
+    return this->field.data;
+  }
+
+  std::vector<float> out(w * h);
+
+  for (size_t j = 0; j < h; ++j)
+  {
+    for (size_t i = 0; i < w; ++i)
+    {
+
+      size_t src_i = flip_i ? (w - 1 - i) : i;
+      size_t src_j = flip_j ? (h - 1 - j) : j;
+
+      size_t dst_idx = j * w + i;
+      size_t src_idx = src_j * w + src_i;
+
+      out[dst_idx] = this->field.data[src_idx];
+    }
+  }
+
+  return out;
+}
 
 std::vector<float> CanvasField::get_field_angle_data() const
 {
-  return this->field_angle.data;
+  bool flip_i = QSX_CONFIG->canvas.flip_i;
+  bool flip_j = QSX_CONFIG->canvas.flip_j;
+
+  size_t w = this->field_angle.width;
+  size_t h = this->field_angle.height;
+
+  if (!flip_i && !flip_j)
+  {
+    return this->field_angle.data;
+  }
+
+  std::vector<float> out(w * h);
+
+  for (size_t j = 0; j < h; ++j)
+  {
+    for (size_t i = 0; i < w; ++i)
+    {
+
+      size_t src_i = flip_i ? (w - 1 - i) : i;
+      size_t src_j = flip_j ? (h - 1 - j) : j;
+
+      size_t dst_idx = j * w + i;
+      size_t src_idx = src_j * w + src_i;
+
+      out[dst_idx] = this->field_angle.data[src_idx];
+    }
+  }
+
+  return out;
 }
 
 int CanvasField::get_field_height() const { return this->field.height; }
@@ -443,10 +502,40 @@ void CanvasField::set_brush_strength(float new_strength)
 
 void CanvasField::set_field_data(const std::vector<float> &new_data)
 {
-  // no checking and the data are eventually resized to their initial
-  // size (with clipping or zero filling if the dimensions mismatched...)
-  this->field.data = new_data;
-  this->field.data.resize(this->field.width * this->field.height);
+  bool flip_i = QSX_CONFIG->canvas.flip_i;
+  bool flip_j = QSX_CONFIG->canvas.flip_j;
+
+  size_t w = this->field.width;
+  size_t h = this->field.height;
+
+  this->field.data.resize(w * h);
+
+  if (!flip_i && !flip_j)
+  {
+    // Fast path: no flipping needed
+    this->field.data = new_data;
+    this->field.data.resize(w * h);
+    return;
+  }
+
+  // With flipping
+  for (size_t j = 0; j < h; ++j)
+  {
+    for (size_t i = 0; i < w; ++i)
+    {
+
+      size_t src_i = flip_i ? (w - 1 - i) : i;
+      size_t src_j = flip_j ? (h - 1 - j) : j;
+
+      size_t dst_idx = j * w + i;
+      size_t src_idx = src_j * w + src_i;
+
+      if (src_idx < new_data.size())
+        this->field.data[dst_idx] = new_data[src_idx];
+      else
+        this->field.data[dst_idx] = 0.0f;
+    }
+  }
 }
 
 QSize CanvasField::sizeHint() const

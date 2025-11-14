@@ -49,6 +49,8 @@ public:
     int    brush_width = 2;
     bool   show_help_overlay = true;
     float  bg_image_alpha = 1.f;
+    bool   flip_i = false;
+    bool   flip_j = true;
   } canvas;
 
   struct Slider
