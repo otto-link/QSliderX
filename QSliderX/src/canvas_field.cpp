@@ -381,7 +381,7 @@ void CanvasField::paintEvent(QPaintEvent *)
       txt = "Smoothing";
 
     if (!txt.empty())
-      painter.drawText(this->rect_img, Qt::AlignLeft | Qt::AlignTop, txt.c_str());
+      painter.drawText(this->rect_img, Qt::AlignRight | Qt::AlignBottom, txt.c_str());
 
     // angle
     if (this->angle_mode)
