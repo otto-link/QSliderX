@@ -28,6 +28,9 @@ set(CMAKE_CXX_STANDARD 20)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/QSliderX/data/bg.png
      DESTINATION ${EXECUTABLE_OUTPUT_PATH}/.)
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/QSliderX/data/bg_crop.png
+     DESTINATION ${EXECUTABLE_OUTPUT_PATH}/.)
+
 # ---  dependencies
 find_package(GSL REQUIRED COMPONENTS gsl gslcblas)
 find_package(spdlog REQUIRED)

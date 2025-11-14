@@ -34,7 +34,7 @@ CanvasField::CanvasField(const std::string &label_,
   this->help_msg = "Field editor\n- left-click: add\n- right-click substract\n- "
                    "mousewheel: brush radius\n- CTRL + mousewheel: brush strength\n- "
                    "SHIFT + left-click: smoothing\n- TAB: switch to angle mode\n- Key C: "
-                   "clear canvas";
+                   "clear canvas\n - SPACE: toggle background image";
   this->setToolTip(this->help_msg.c_str());
 
   this->update_geometry();
@@ -46,11 +46,6 @@ QColor CanvasField::colormap(float v) const
 
   int gray = SINT(255 * v);
   return QColor(gray, gray, gray);
-
-  int r = static_cast<int>(std::clamp(4 * v - 1.5f, 0.f, 1.f) * 255);
-  int g = static_cast<int>(std::clamp(4 * v - 0.5f, 0.f, 1.f) * 255);
-  int b = static_cast<int>(std::clamp(4 * (0.75f - v), 0.f, 1.f) * 255);
-  return QColor(r, g, b);
 }
 
 void CanvasField::clear()
@@ -272,6 +267,15 @@ void CanvasField::keyPressEvent(QKeyEvent *event)
       this->update();
     }
   }
+  else if (event->key() == Qt::Key_Space)
+  {
+    this->show_bg_image = !this->show_bg_image;
+    this->update();
+  }
+  else
+  {
+    QWidget::keyPressEvent(event);
+  }
 }
 
 void CanvasField::keyReleaseEvent(QKeyEvent *event)
@@ -334,9 +338,17 @@ void CanvasField::paintEvent(QPaintEvent *)
           : QPen(QSX_CONFIG->global.color_border, QSX_CONFIG->global.width_border));
   painter.drawRoundedRect(this->rect(), radius, radius);
 
+  // overlay background image
+  if (!this->bg_image.isNull() && this->show_bg_image)
+  {
+    painter.setOpacity(QSX_CONFIG->canvas.bg_image_alpha);
+    painter.drawImage(this->rect_img, this->bg_image);
+    painter.setOpacity(1.);
+  }
+
   // display data
   {
-    QImage image(this->field.width, this->field.height, QImage::Format_RGB32);
+    QImage image(this->field.width, this->field.height, QImage::Format_ARGB32);
 
     const FloatField &field_to_draw = this->angle_mode ? this->field_angle : this->field;
 
@@ -345,7 +357,8 @@ void CanvasField::paintEvent(QPaintEvent *)
       {
         float  value = std::clamp(field_to_draw.at(i, j), 0.f, 1.f);
         QColor c = this->colormap(value);
-        image.setPixel(i, j, c.rgb());
+        c.setAlphaF(value);
+        image.setPixel(i, j, c.rgba());
       }
 
     painter.drawImage(this->rect_img, image);
@@ -414,6 +427,13 @@ void CanvasField::resizeEvent(QResizeEvent *event)
 void CanvasField::set_allow_angle_mode(bool new_state)
 {
   this->allow_angle_mode = new_state;
+}
+
+void CanvasField::set_bg_image(const QImage &new_bg_image)
+{
+  this->bg_image = new_bg_image.copy();
+  this->update_geometry();
+  this->update();
 }
 
 void CanvasField::set_brush_strength(float new_strength)

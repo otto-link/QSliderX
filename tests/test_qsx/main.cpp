@@ -29,15 +29,15 @@ int main(int argc, char *argv[])
   QWidget      window;
   QVBoxLayout *layout = new QVBoxLayout(&window);
 
-  bool show_slider_int = true;
-  bool show_slider_float = true;
+  bool show_slider_int = false;
+  bool show_slider_float = false;
   bool show_slider_float_log = false;
-  bool show_slider_range = true;
+  bool show_slider_range = false;
   bool show_point2d_selector = false;
   bool show_vector_editor = false;
   bool show_curve_editor = false;
   bool show_canvas_points = false;
-  bool show_canvas_field = false;
+  bool show_canvas_field = true;
   bool show_color_picker = false;
   bool show_gradient_color_picker = false;
 
@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
       layout->addWidget(s);
 
       s->set_allow_angle_mode(true);
+      s->set_bg_image(QImage("bg_crop.png"));
 
       s->connect(s,
                  &qsx::CanvasField::value_changed,
