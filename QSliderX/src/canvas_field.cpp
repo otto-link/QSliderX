@@ -398,7 +398,9 @@ void CanvasField::paintEvent(QPaintEvent *)
   painter.drawRoundedRect(this->rect(), radius, radius);
 
   // overlay background image
-  if (!this->bg_image.isNull() && this->show_bg_image)
+  const bool is_image = !this->bg_image.isNull() && this->show_bg_image;
+
+  if (is_image)
   {
     painter.setOpacity(QSX_CONFIG->canvas.bg_image_alpha);
     painter.drawImage(this->rect_img, this->bg_image);
@@ -416,7 +418,8 @@ void CanvasField::paintEvent(QPaintEvent *)
       {
         float  value = std::clamp(field_to_draw.at(i, j), 0.f, 1.f);
         QColor c = this->colormap(value);
-        c.setAlphaF(value);
+        if (is_image)
+          c.setAlphaF(value);
         image.setPixel(i, j, c.rgba());
       }
 
