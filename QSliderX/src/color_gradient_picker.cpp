@@ -238,7 +238,7 @@ void ColorGradientPicker::show_presets_menu()
     QObject::connect(preview_widget,
                      &GradientPreviewWidget::clicked,
                      this,
-                     [this, &preset]()
+                     [this, preset]()
                      {
                        this->stops = preset.stops;
                        this->sort_stops();
