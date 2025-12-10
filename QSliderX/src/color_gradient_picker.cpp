@@ -40,6 +40,13 @@ void ColorGradientPicker::contextMenuEvent(QContextMenuEvent *event)
       if (this->stops.size() > 2)
       {
         this->stops.remove(index);
+
+        // ensure selected_stop_index stays valid
+        if (this->selected_stop_index == index)
+          this->selected_stop_index = -1;
+        else if (this->selected_stop_index > index)
+          this->selected_stop_index--;
+
         this->update_gradient();
 
         Q_EMIT this->edit_ended();
@@ -232,7 +239,7 @@ void ColorGradientPicker::show_presets_menu()
   for (auto &preset : this->presets)
   {
     QWidgetAction *action = new QWidgetAction(&menu);
-    auto          *preview_widget = new GradientPreviewWidget(preset.name, preset.stops);
+    auto *preview_widget = new GradientPreviewWidget(preset.name, preset.stops, &menu);
     action->setDefaultWidget(preview_widget);
 
     QObject::connect(preview_widget,
