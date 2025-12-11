@@ -7,6 +7,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QTimer>
 #include <QWidgetAction>
 
 #include "qsx/color_gradient_picker.hpp"
@@ -236,23 +237,29 @@ void ColorGradientPicker::show_presets_menu()
 
   QMenu menu(this);
 
-  for (auto &preset : this->presets)
+  for (auto preset : this->presets)
   {
     QWidgetAction *action = new QWidgetAction(&menu);
-    auto *preview_widget = new GradientPreviewWidget(preset.name, preset.stops, &menu);
+    auto *preview_widget = new GradientPreviewWidget(preset.name, preset.stops, nullptr);
     action->setDefaultWidget(preview_widget);
 
-    QObject::connect(preview_widget,
-                     &GradientPreviewWidget::clicked,
-                     this,
-                     [this, preset]()
-                     {
-                       this->stops = preset.stops;
-                       this->sort_stops();
-                       this->update_gradient();
+    // Connect widget click
+    connect(preview_widget,
+            &GradientPreviewWidget::clicked,
+            this,
+            [this, preset, &menu]()
+            {
+              // Apply preset right here (safe)
+              this->stops = preset.stops;
+              this->sort_stops();
+              this->update_gradient();
 
-                       Q_EMIT edit_ended();
-                     });
+              Q_EMIT edit_ended();
+
+              // manually close the menu because QAction::triggered is
+              // bypass here
+              menu.close();
+            });
 
     menu.addAction(action);
   }

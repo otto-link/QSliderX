@@ -67,6 +67,8 @@ private:
   int                 selected_stop_index = -1;
   bool                dragging = false;
   std::vector<Preset> presets;
+  Preset              pending_preset;
+  bool                has_pending_preset = false;
 };
 
 } // namespace qsx
