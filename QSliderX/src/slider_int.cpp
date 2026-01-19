@@ -80,6 +80,8 @@ bool SliderInt::event(QEvent *event)
   {
     this->is_hovered = true;
     this->update();
+
+    this->setCursor(Qt::SizeHorCursor);
   }
   break;
 
@@ -90,6 +92,8 @@ bool SliderInt::event(QEvent *event)
     this->is_plus_hovered = false;
     this->is_bar_hovered = false;
     this->update();
+
+    this->setCursor(Qt::ArrowCursor);
   }
   break;
 
@@ -102,6 +106,11 @@ bool SliderInt::event(QEvent *event)
     this->is_plus_hovered = this->rect_plus.contains(pos);
     this->is_bar_hovered = this->rect_bar.contains(pos);
     this->update();
+
+    if (this->is_bar_hovered)
+      this->setCursor(Qt::SizeHorCursor);
+    else
+      this->setCursor(Qt::ArrowCursor);
   }
   break;
 
