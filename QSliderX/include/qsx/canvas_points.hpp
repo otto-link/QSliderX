@@ -58,6 +58,7 @@ protected:
 private:
   void   add_point(float x, float y);
   void   canvas_position_to_xy(QPoint pos, float &x, float &y);
+  int    find_path_insertion_index(float x, float y) const;
   void   remove_point(int idx);
   void   update_geometry();
   QPoint xy_to_canvas_position(float x, float y);

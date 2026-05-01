@@ -123,9 +123,26 @@ void CanvasPoints::mouseDoubleClickEvent(QMouseEvent *event)
   {
     float x, y;
     this->canvas_position_to_xy(pos, x, y);
-    this->add_point(x, y);
-    // focus on new pt
-    this->hovered_point_id = SINT(this->points_x.size() - 1);
+
+    if (this->connected_points && this->points_x.size() >= 2)
+    {
+      // In path mode insert the new point onto the closest edge segment so the
+      // path topology stays clean.
+      int idx = this->find_path_insertion_index(x, y);
+      this->points_x.insert(this->points_x.begin() + idx, x);
+      this->points_y.insert(this->points_y.begin() + idx, y);
+      this->points_z.insert(this->points_z.begin() + idx, 1.f);
+      this->hovered_point_id = idx;
+      this->update();
+      Q_EMIT this->value_changed();
+    }
+    else
+    {
+      this->add_point(x, y);
+      // focus on new pt
+      this->hovered_point_id = SINT(this->points_x.size() - 1);
+    }
+
     Q_EMIT this->edit_ended();
   }
 
@@ -249,6 +266,18 @@ void CanvasPoints::paintEvent(QPaintEvent *)
 
     QPoint pos = this->xy_to_canvas_position(this->points_x[k], this->points_y[k]);
 
+    // connections
+    if (this->connected_points && k < this->points_x.size() - 1)
+    {
+      painter.setPen(
+          QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
+      painter.setBrush(Qt::NoBrush);
+
+      QPoint pos_next = this->xy_to_canvas_position(this->points_x[k + 1],
+                                                    this->points_y[k + 1]);
+      painter.drawLine(pos, pos_next);
+    }
+
     // point value
     if (this->draw_z_value)
     {
@@ -271,18 +300,6 @@ void CanvasPoints::paintEvent(QPaintEvent *)
                             : QBrush(QSX_CONFIG->global.color_bg));
 
     painter.drawEllipse(pos, point_radius, point_radius);
-
-    // connections
-    if (this->connected_points && k < this->points_x.size() - 1)
-    {
-      painter.setPen(
-          QPen(QSX_CONFIG->global.color_text, QSX_CONFIG->global.width_border));
-      painter.setBrush(Qt::NoBrush);
-
-      QPoint pos_next = this->xy_to_canvas_position(this->points_x[k + 1],
-                                                    this->points_y[k + 1]);
-      painter.drawLine(pos, pos_next);
-    }
   }
 
   // display value if dragging
@@ -322,6 +339,45 @@ void CanvasPoints::paintEvent(QPaintEvent *)
     resize_font(this, 2);
     painter.setFont(this->font());
   }
+}
+
+// Returns the index at which a new point (x, y) should be inserted so that it
+// sits on the closest existing edge segment of the path.  Falls back to
+// appending when there are fewer than 2 points.
+int CanvasPoints::find_path_insertion_index(float x, float y) const
+{
+  if (this->points_x.size() < 2)
+    return SINT(this->points_x.size());
+
+  int   best_idx = 1;
+  float best_dist = std::numeric_limits<float>::max();
+
+  for (size_t k = 0; k + 1 < this->points_x.size(); ++k)
+  {
+    float ax = this->points_x[k];
+    float ay = this->points_y[k];
+    float bx = this->points_x[k + 1];
+    float by = this->points_y[k + 1];
+
+    float dx = bx - ax;
+    float dy = by - ay;
+    float len2 = dx * dx + dy * dy;
+
+    float t = (len2 > 0.f) ? std::clamp(((x - ax) * dx + (y - ay) * dy) / len2, 0.f, 1.f)
+                           : 0.f;
+
+    float ex = ax + t * dx - x;
+    float ey = ay + t * dy - y;
+    float dist = ex * ex + ey * ey;
+
+    if (dist < best_dist)
+    {
+      best_dist = dist;
+      best_idx = SINT(k) + 1;
+    }
+  }
+
+  return best_idx;
 }
 
 void CanvasPoints::remove_point(int idx)
