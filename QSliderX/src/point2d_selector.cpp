@@ -26,6 +26,8 @@ Point2DSelector::Point2DSelector(const std::string &label_,
 {
   this->setMouseTracking(true);
   this->setAttribute(Qt::WA_Hover);
+  this->setMinimumHeight(80); // safety
+  this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 }
 
 bool Point2DSelector::event(QEvent *event)
