@@ -2,6 +2,7 @@
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
 #include <algorithm>
+#include <cmath>
 
 #include <QColorDialog>
 #include <QMenu>
@@ -124,12 +125,26 @@ void ColorGradientPicker::mouseDoubleClickEvent(QMouseEvent *event)
     if (bar_rect.contains(event->pos()))
     {
       qreal pos = (event->pos().x() - bar_rect.left()) / bar_rect.width();
-      this->stops.push_back({pos, QColor(255, 255, 255, 255)});
-      this->sort_stops();
-      this->selected_stop_index = this->find_stop_at_position(event->pos());
-      this->update_gradient();
+      pos = std::clamp(pos, 0.0, 1.0);
 
-      Q_EMIT this->edit_ended();
+      // Reject a stop coincident with an existing one: coincident positions
+      // are fed as strictly-increasing x to a GSL spline downstream and would
+      // otherwise crash the colorize computation.
+      const qreal eps = 1e-3;
+      bool        too_close = std::any_of(this->stops.begin(),
+                                   this->stops.end(),
+                                   [&](const Stop &s)
+                                   { return std::abs(s.position - pos) < eps; });
+
+      if (!too_close)
+      {
+        this->stops.push_back({pos, QColor(255, 255, 255, 255)});
+        this->sort_stops();
+        this->selected_stop_index = this->find_stop_at_position(event->pos());
+        this->update_gradient();
+
+        Q_EMIT this->edit_ended();
+      }
     }
   }
 }
@@ -154,6 +169,23 @@ void ColorGradientPicker::mouseMoveEvent(QMouseEvent *event)
     QRectF bar_rect = this->rect().adjusted(10, 10, -10, -20);
     qreal  pos = (event->pos().x() - bar_rect.left()) / bar_rect.width();
     pos = std::clamp(pos, 0.0, 1.0);
+
+    // Keep a minimum gap so the dragged stop can never share another stop's
+    // position: coincident positions crash the GSL-based colorize downstream.
+    const qreal eps = 1e-3;
+    for (int i = 0; i < this->stops.size(); ++i)
+    {
+      if (i == this->selected_stop_index)
+        continue;
+
+      if (std::abs(this->stops[i].position - pos) < eps)
+      {
+        pos = (pos < this->stops[i].position) ? this->stops[i].position - eps
+                                              : this->stops[i].position + eps;
+        pos = std::clamp(pos, 0.0, 1.0);
+      }
+    }
+
     this->stops[this->selected_stop_index].position = pos;
     this->sort_stops();
     this->update_gradient();
