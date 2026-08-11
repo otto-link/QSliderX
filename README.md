@@ -1,3 +1,13 @@
+>[!WARNING]  **Archived / No Longer Maintained**
+>
+>This repository is read-only and no longer maintained or developed.
+>
+>It has been superseded by the Meta project, which is now the active and maintained version:
+>
+>https://github.com/otto-link/Meta
+>
+>Please use the Meta repository for all new development, issues, and contributions.
+
 # QSliderX
 
 QSliderX is a C++ library that extends Qt6 with custom slider widgets inspired by Blender's UX. It provides sliders for numeric and range values, with optional bounds and dynamic visual feedback such as histograms. This library is currently used in the Hesiod GUI, a node-based system for heightmap generation.
